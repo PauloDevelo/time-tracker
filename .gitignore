@@ -1,0 +1,50 @@
+# Common .gitignore patterns for full-stack projects (Angular + Node.js)
+
+### Angular Frontend ###
+# Ignore Angular project files
+node_modules/
+.angular/
+*.ng*
+.SRCROOT
+
+# Ignore generated code and temporary files
+dist/
+build/
+
+# Ignore coverage reports
+coverage/
+
+# Ignore test results
+TESTS/*
+
+# Environment variables file
+.env.local
+env.development
+env.production
+
+### Node.js/Express Backend ###
+# Ignore node modules
+node_modules/
+npm-debug.log*
+package-lock.json
+yarn.lock
+yarn-error.log
+
+# Ignore .sass-cache and other Sass-related files
+.sass-cache/
+
+# Ignore npm cache directories
+.npmignore
+.DS_Store
+
+# TypeScript generated files (if using TypeScript)
+*.js.map
+@types/*
+
+### IDE Specific Files ###
+.vscode/
+.idea/
+
+### Logs and Other Local Data ###
+access.log
+error.log
