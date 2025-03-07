@@ -19,6 +19,11 @@ export const routes: Routes = [
     title: 'Dashboard - Time Tracker'
   },
   {
+    path: 'customers',
+    loadChildren: () => import('./features/customers/customers.routes').then(m => m.CUSTOMER_ROUTES),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }

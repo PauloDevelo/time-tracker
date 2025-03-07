@@ -1,0 +1,79 @@
+<form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+  <div class="form-section">
+    <h2>Customer Information</h2>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Customer Name</mat-label>
+      <input matInput formControlName="name" placeholder="Company or individual name">
+      <mat-error *ngIf="submitted && f['name'].errors">
+        <span *ngIf="f['name'].errors['required']">Name is required</span>
+        <span *ngIf="f['name'].errors['maxlength']">Name cannot exceed 100 characters</span>
+      </mat-error>
+    </mat-form-field>
+  </div>
+  
+  <div class="form-section" formGroupName="contactInfo">
+    <h2>Contact Information</h2>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" placeholder="Email address" type="email">
+      <mat-error *ngIf="submitted && contactInfo.get('email')?.errors">
+        <span *ngIf="contactInfo.get('email')?.errors?.['required']">Email is required</span>
+        <span *ngIf="contactInfo.get('email')?.errors?.['email']">Please enter a valid email</span>
+      </mat-error>
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Phone</mat-label>
+      <input matInput formControlName="phone" placeholder="Phone number (optional)">
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Address</mat-label>
+      <textarea matInput formControlName="address" placeholder="Address (optional)" rows="3"></textarea>
+    </mat-form-field>
+  </div>
+  
+  <div class="form-section" formGroupName="billingDetails">
+    <h2>Billing Details</h2>
+    
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Daily Rate</mat-label>
+        <input matInput formControlName="dailyRate" placeholder="Daily rate" type="number" min="0">
+        <mat-error *ngIf="submitted && billingDetails.get('dailyRate')?.errors">
+          <span *ngIf="billingDetails.get('dailyRate')?.errors?.['required']">Daily rate is required</span>
+          <span *ngIf="billingDetails.get('dailyRate')?.errors?.['min']">Daily rate must be positive</span>
+        </mat-error>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Currency</mat-label>
+        <mat-select formControlName="currency">
+          <mat-option *ngFor="let currency of currencies" [value]="currency">
+            {{ currency }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="submitted && billingDetails.get('currency')?.errors?.['required']">
+          Currency is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Payment Terms</mat-label>
+      <textarea matInput formControlName="paymentTerms" placeholder="Payment terms (optional)" rows="2"></textarea>
+    </mat-form-field>
+  </div>
+  
+  <div class="form-actions">
+    <button type="button" mat-button (click)="onCancel()">
+      Cancel
+    </button>
+    <button type="submit" mat-raised-button color="primary" [disabled]="loading">
+      <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+      <span *ngIf="!loading">{{ customer ? 'Update' : 'Create' }} Customer</span>
+    </button>
+  </div>
+</form> 

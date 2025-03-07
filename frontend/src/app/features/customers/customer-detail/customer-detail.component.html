@@ -1,0 +1,93 @@
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <button mat-icon-button (click)="goBack()" aria-label="Back">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Customer Details</h1>
+    </div>
+    <div class="header-actions" *ngIf="customer">
+      <button mat-raised-button color="primary" (click)="editCustomer()">
+        <mat-icon>edit</mat-icon> Edit
+      </button>
+      <button mat-raised-button color="warn" (click)="deleteCustomer()">
+        <mat-icon>delete</mat-icon> Delete
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="isLoading">
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading customer details...</p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!isLoading && error">
+    <div class="error-container">
+      <p>{{ error }}</p>
+      <button mat-button color="primary" (click)="loadCustomer()">Try Again</button>
+      <button mat-button routerLink="/customers">Back to Customers</button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!isLoading && !error && customer">
+    <mat-card>
+      <mat-card-content>
+        <div class="detail-section">
+          <h2>Customer Information</h2>
+          <div class="detail-row">
+            <span class="detail-label">Name:</span>
+            <span class="detail-value">{{ customer.name }}</span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="detail-section">
+          <h2>Contact Information</h2>
+          <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ customer.contactInfo.email }}</span>
+          </div>
+          <div class="detail-row" *ngIf="customer.contactInfo.phone">
+            <span class="detail-label">Phone:</span>
+            <span class="detail-value">{{ customer.contactInfo.phone }}</span>
+          </div>
+          <div class="detail-row" *ngIf="customer.contactInfo.address">
+            <span class="detail-label">Address:</span>
+            <span class="detail-value">{{ customer.contactInfo.address }}</span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="detail-section">
+          <h2>Billing Details</h2>
+          <div class="detail-row">
+            <span class="detail-label">Daily Rate:</span>
+            <span class="detail-value">{{ customer.billingDetails.dailyRate | currency:customer.billingDetails.currency }}</span>
+          </div>
+          <div class="detail-row" *ngIf="customer.billingDetails.paymentTerms">
+            <span class="detail-label">Payment Terms:</span>
+            <span class="detail-value">{{ customer.billingDetails.paymentTerms }}</span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="detail-section">
+          <h2>System Information</h2>
+          <div class="detail-row">
+            <span class="detail-label">Created:</span>
+            <span class="detail-value">{{ customer.createdAt | date:'medium' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Last Updated:</span>
+            <span class="detail-value">{{ customer.updatedAt | date:'medium' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div> 
