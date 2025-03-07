@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 import { initializeSwagger } from './swagger/swagger.helpers';
-import { initializeRoutes } from './routes/routes.helpers';
+import { initializeRoutes } from './routes/routes';
 import { initializeEnvironmentVariables } from './config/environment.helpers';
 
 // Load environment variables based on NODE_ENV

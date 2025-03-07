@@ -1,4 +1,4 @@
-import { Router, Response, NextFunction, RequestHandler } from 'express';
+import { Router } from 'express';
 import {
   createCustomer,
   getCustomers,
@@ -7,12 +7,7 @@ import {
   deleteCustomer,
 } from '../controllers/customer.controller';
 import { auth } from '../middleware/auth';
-import { AuthenticatedRequest } from '../middleware/authenticated-request.model';
-
-// Type assertion helper function for controllers using AuthenticatedRequest
-const handleAuth = (fn: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<any>): RequestHandler => {
-  return fn as unknown as RequestHandler;
-};
+import { handleAuth } from './routes.helpers';
 
 const router = Router();
 

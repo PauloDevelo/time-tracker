@@ -1,18 +1,7 @@
-import { Express } from 'express';
+import { NextFunction, RequestHandler, Response } from 'express';
+import { AuthenticatedRequest } from 'src/middleware/authenticated-request.model';
 
-// Import routes
-import authRoutes from './auth.routes';
-import customerRoutes from './customer.routes';
-import projectRoutes from './project.routes';
-import taskRoutes from './task.routes';
-
-export const initializeRoutes = (app: Express) => {
-    app.get('/', (_req, res) => {
-        res.json({ message: 'Welcome to Time Tracking API' });
-    });
-
-    app.use('/auth', authRoutes);
-    app.use('/api/customers', customerRoutes);
-    app.use('/api/projects', projectRoutes);
-    app.use('/api/tasks', taskRoutes);
+// Type assertion helper function for controllers using AuthenticatedRequest
+export const handleAuth = (fn: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<any>): RequestHandler => {
+  return fn as unknown as RequestHandler;
 };

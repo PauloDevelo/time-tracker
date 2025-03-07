@@ -1,11 +1,14 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITimeEntry extends Document {
-  startTime: Date;
-  duration: number; // in minutes
-  description: string;
+  startTime: Date; // The is the date the time entry is applicable to in UTC
+  totalDurationInHour: number; // The duration of the time entry in hours. This duration might not be accurate if the time entry is in progress
+  
+  startProgressTime: Date | undefined; // The time the time entry is in progress from. This can be undefined if the time entry is not in progress
+  
   taskId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,15 +19,14 @@ const timeEntrySchema = new Schema<ITimeEntry>(
       type: Date,
       required: true,
     },
-    duration: {
+    totalDurationInHour: {
       type: Number,
       required: true,
       min: 0,
     },
-    description: {
-      type: String,
-      required: true,
-      trim: true,
+    startProgressTime: {
+      type: Date,
+      required: false,
     },
     taskId: {
       type: Schema.Types.ObjectId,
@@ -46,21 +48,13 @@ const timeEntrySchema = new Schema<ITimeEntry>(
 timeEntrySchema.index({ userId: 1, taskId: 1 });
 timeEntrySchema.index({ startTime: 1 });
 
-// Virtual for end time
-timeEntrySchema.virtual('endTime').get(function() {
-  return new Date(this.startTime.getTime() + this.duration * 60000);
-});
-
-// Method to check if time entry overlaps with another
-timeEntrySchema.methods.overlaps = function(other: ITimeEntry): boolean {
-  const thisEnd = this.endTime;
-  const otherEnd = new Date(other.startTime.getTime() + other.duration * 60000);
+// Virtual to check if the time entry is in progress
+timeEntrySchema.virtual('isInProgress').get(function() {
+  if (!this.startProgressTime) {
+    return true;
+  }
   
-  return (
-    (this.startTime <= other.startTime && thisEnd > other.startTime) ||
-    (this.startTime < otherEnd && thisEnd >= otherEnd) ||
-    (this.startTime >= other.startTime && thisEnd <= otherEnd)
-  );
-};
+  return false;
+});
 
 export const TimeEntry = mongoose.model<ITimeEntry>('TimeEntry', timeEntrySchema); 

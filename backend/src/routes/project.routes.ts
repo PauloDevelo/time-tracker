@@ -1,13 +1,8 @@
-import { NextFunction, RequestHandler, Router, Response } from 'express';
+import { Router } from 'express';
 
 import { auth } from '../middleware/auth'; // Assuming you have an auth middleware
 import { createProject, deleteProject, getAllProjects, getProjectById, updateProject } from '../controllers/project.controller';
-import { AuthenticatedRequest } from '../middleware/authenticated-request.model';
-
-// Type assertion helper function for controllers using AuthenticatedRequest
-const handleAuth = (fn: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<any>): RequestHandler => {
-  return fn as unknown as RequestHandler;
-};
+import { handleAuth } from './routes.helpers';
 
 const router = Router();
 
