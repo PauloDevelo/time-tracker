@@ -1,0 +1,42 @@
+.signup-container {
+  max-width: 500px;
+  margin: 50px auto;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+mat-card {
+  padding: 20px;
+}
+
+mat-card-header {
+  margin-bottom: 20px;
+}
+
+.signup-button {
+  width: 100%;
+  height: 40px;
+  margin-top: 10px;
+}
+
+.spinner-container {
+  display: inline-flex;
+  justify-content: center;
+}
+
+mat-form-field {
+  width: 100%;
+} 

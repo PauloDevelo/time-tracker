@@ -1,0 +1,32 @@
+.login-container {
+  max-width: 400px;
+  margin: 50px auto;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+mat-card {
+  padding: 20px;
+}
+
+mat-card-header {
+  margin-bottom: 20px;
+}
+
+.login-button {
+  width: 100%;
+  height: 40px;
+  margin-top: 10px;
+}
+
+.spinner-container {
+  display: inline-flex;
+  justify-content: center;
+}
+
+mat-form-field {
+  width: 100%;
+} 
