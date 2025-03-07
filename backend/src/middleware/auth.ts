@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User, IUser } from '../models/User';
+import { User } from '../models/User';
+import { AuthenticatedRequest } from './authenticated-request.model';
 
 interface JwtPayload {
   userId: string;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user: IUser;
 }
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {

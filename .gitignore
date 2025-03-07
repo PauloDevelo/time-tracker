@@ -17,10 +17,12 @@ coverage/
 # Ignore test results
 TESTS/*
 
-# Environment variables file
+# Environment variables files
+.env
+.env.development
+.env.production
+.env.test
 .env.local
-env.development
-env.production
 
 ### Node.js/Express Backend ###
 # Ignore node modules

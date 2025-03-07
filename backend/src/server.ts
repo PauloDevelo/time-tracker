@@ -3,18 +3,13 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
-import dotenv from 'dotenv';
 
-// Import routes
-import authRoutes from './routes/auth.routes';
-import customerRoutes from './routes/customer.routes';
+import { initializeSwagger } from './swagger/swagger.helpers';
+import { initializeRoutes } from './routes/routes.helpers';
+import { initializeEnvironmentVariables } from './config/environment.helpers';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables based on NODE_ENV
+initializeEnvironmentVariables();
 
 // Create Express app
 const app = express();
@@ -32,54 +27,10 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Swagger configuration
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Time Tracking API',
-      version: '1.0.0',
-      description: 'API documentation for the Time Tracking application',
-    },
-    servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
-    ],
-  },
-  apis: ['./src/routes/*.ts'], // Path to the API routes
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Google OAuth configuration
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: '/auth/google/callback'
-  },
-  async (_accessToken, _refreshToken, profile, done) => {
-    try {
-      // TODO: Implement user creation/update logic
-      return done(null, profile);
-    } catch (error) {
-      return done(error as Error);
-    }
-  }
-));
-
-app.use(passport.initialize());
-
-// Routes
-app.get('/', (_req, res) => {
-  res.json({ message: 'Welcome to Time Tracking API' });
-});
+initializeSwagger(app);
 
 // API routes
-app.use('/auth', authRoutes);
-app.use('/api/customers', customerRoutes);
+initializeRoutes(app);
 
 // Error handling middleware
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

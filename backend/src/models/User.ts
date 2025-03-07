@@ -1,22 +1,14 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
-  googleId: string;
   email: string;
   firstName: string;
   lastName: string;
-  picture?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  password: string;
 }
 
 const userSchema = new Schema<IUser>(
   {
-    googleId: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     email: {
       type: String,
       required: true,
@@ -34,10 +26,10 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
-    picture: {
+    password: {
       type: String,
-      trim: true,
-    },
+      required: true,
+    }
   },
   {
     timestamps: true,
@@ -46,6 +38,5 @@ const userSchema = new Schema<IUser>(
 
 // Indexes
 userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
 
 export const User = mongoose.model<IUser>('User', userSchema); 

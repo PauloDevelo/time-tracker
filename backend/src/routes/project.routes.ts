@@ -1,12 +1,7 @@
-import { Router, Response, NextFunction, RequestHandler } from 'express';
-import {
-  createCustomer,
-  getCustomers,
-  getCustomer,
-  updateCustomer,
-  deleteCustomer,
-} from '../controllers/customer.controller';
-import { auth } from '../middleware/auth';
+import { NextFunction, RequestHandler, Router, Response } from 'express';
+
+import { auth } from '../middleware/auth'; // Assuming you have an auth middleware
+import { createProject, deleteProject, getAllProjects, getProjectById, updateProject } from '../controllers/project.controller';
 import { AuthenticatedRequest } from '../middleware/authenticated-request.model';
 
 // Type assertion helper function for controllers using AuthenticatedRequest
@@ -16,15 +11,15 @@ const handleAuth = (fn: (req: AuthenticatedRequest, res: Response, next: NextFun
 
 const router = Router();
 
-// All routes are protected
+// Apply authentication middleware to all project routes
 router.use(auth);
 
 /**
  * @swagger
- * /api/customers:
+ * /api/projects:
  *   post:
- *     summary: Create a new customer
- *     tags: [Customers]
+ *     summary: Create a new project
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -32,41 +27,41 @@ router.use(auth);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Customer'
+ *             $ref: '#/components/schemas/Project'
  *     responses:
  *       201:
- *         description: Customer created successfully
+ *         description: Project created successfully
  *       400:
- *         description: Error creating customer
+ *         description: Error creating project
  *       401:
  *         description: Unauthorized
  */
-router.post('/', handleAuth(createCustomer));
+router.post('/', handleAuth(createProject));
 
 /**
  * @swagger
- * /api/customers:
+ * /api/projects:
  *   get:
- *     summary: Get all customers
- *     tags: [Customers]
+ *     summary: Get all projects
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of customers
+ *         description: List of projects
  *       401:
  *         description: Unauthorized
  *       500:
  *         description: Server error
  */
-router.get('/', handleAuth(getCustomers));
+router.get('/', handleAuth(getAllProjects));
 
 /**
  * @swagger
- * /api/customers/{id}:
+ * /api/projects/{id}:
  *   get:
- *     summary: Get a customer by ID
- *     tags: [Customers]
+ *     summary: Get a project by ID
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -77,20 +72,20 @@ router.get('/', handleAuth(getCustomers));
  *           type: string
  *     responses:
  *       200:
- *         description: Customer details
+ *         description: Project details
  *       401:
  *         description: Unauthorized
  *       404:
- *         description: Customer not found
+ *         description: Project not found
  */
-router.get('/:id', handleAuth(getCustomer));
+router.get('/:id', handleAuth(getProjectById));
 
 /**
  * @swagger
- * /api/customers/{id}:
+ * /api/projects/{id}:
  *   put:
- *     summary: Update a customer
- *     tags: [Customers]
+ *     summary: Update a project
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -107,20 +102,20 @@ router.get('/:id', handleAuth(getCustomer));
  *             type: object
  *     responses:
  *       200:
- *         description: Updated customer
+ *         description: Updated project
  *       401:
  *         description: Unauthorized
  *       404:
- *         description: Customer not found
+ *         description: Project not found
  */
-router.put('/:id', handleAuth(updateCustomer));
+router.put('/:id', handleAuth(updateProject));
 
 /**
  * @swagger
- * /api/customers/{id}:
+ * /api/projects/{id}:
  *   delete:
- *     summary: Delete a customer
- *     tags: [Customers]
+ *     summary: Delete a project
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -131,12 +126,12 @@ router.put('/:id', handleAuth(updateCustomer));
  *           type: string
  *     responses:
  *       200:
- *         description: Customer deleted successfully
+ *         description: Project deleted successfully
  *       401:
  *         description: Unauthorized
  *       404:
- *         description: Customer not found
+ *         description: Project not found
  */
-router.delete('/:id', handleAuth(deleteCustomer));
+router.delete('/:id', handleAuth(deleteProject));
 
 export default router;

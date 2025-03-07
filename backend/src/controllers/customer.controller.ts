@@ -1,10 +1,6 @@
-import { Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { Customer } from '../models/Customer';
-import { IUser } from '../models/User';
-
-interface AuthenticatedRequest extends Request {
-  user: IUser;
-}
+import { AuthenticatedRequest } from '../middleware/authenticated-request.model';
 
 export const createCustomer = async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -18,13 +14,14 @@ export const createCustomer = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const getCustomers = async (req: AuthenticatedRequest, res: Response) => {
+export const getCustomers = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const customers = await Customer.find({ userId: req.user._id })
       .sort({ name: 1 });
-    return res.json(customers);
+    res.json(customers);
+    next();
   } catch (error) {
-    return res.status(500).json({ message: 'Error fetching customers', error });
+    res.status(500).json({ message: 'Error fetching customers', error });
   }
 };
 
