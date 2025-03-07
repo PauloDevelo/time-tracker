@@ -1,0 +1,23 @@
+.project-edit-container {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 24px;
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.loading-container p, .error-container p {
+  margin: 16px 0;
+  color: rgba(0, 0, 0, 0.6);
+} 

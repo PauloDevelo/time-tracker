@@ -1,0 +1,80 @@
+<div class="project-detail-container">
+  <div class="header">
+    <button mat-button [routerLink]="['/projects']" class="back-button">
+      <mat-icon>arrow_back</mat-icon> Back to Projects
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading project details...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <p>Failed to load project details. Please try again.</p>
+    <button mat-raised-button color="primary" (click)="loadProject()">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error && project" class="project-details">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ project.name }}</mat-card-title>
+        <mat-card-subtitle *ngIf="project.customerId">
+          Customer: {{ project.customerId.name }}
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="section">
+          <h3>Description</h3>
+          <p *ngIf="project.description">{{ project.description }}</p>
+          <p *ngIf="!project.description" class="no-data">No description provided</p>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="section">
+          <h3>Timeline</h3>
+          <div class="timeline-details">
+            <div *ngIf="project.startDate" class="timeline-item">
+              <span class="label">Start Date:</span>
+              <span class="value">{{ project.startDate | date:'mediumDate' }}</span>
+            </div>
+            <div *ngIf="project.endDate" class="timeline-item">
+              <span class="label">End Date:</span>
+              <span class="value">{{ project.endDate | date:'mediumDate' }}</span>
+            </div>
+            <div *ngIf="!project.startDate && !project.endDate" class="no-data">
+              No timeline information provided
+            </div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="section">
+          <h3>Additional Information</h3>
+          <div class="additional-details">
+            <div class="additional-item">
+              <span class="label">Created:</span>
+              <span class="value">{{ project.createdAt | date:'medium' }}</span>
+            </div>
+            <div class="additional-item">
+              <span class="label">Last Updated:</span>
+              <span class="value">{{ project.updatedAt | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button [routerLink]="['/projects', project._id, 'edit']">
+          <mat-icon>edit</mat-icon> Edit
+        </button>
+        <button mat-button color="warn" (click)="deleteProject()">
+          <mat-icon>delete</mat-icon> Delete
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div> 

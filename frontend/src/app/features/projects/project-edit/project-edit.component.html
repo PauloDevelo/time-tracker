@@ -1,0 +1,23 @@
+<div class="project-edit-container">
+  <h1>Edit Project</h1>
+  
+  <div *ngIf="loadingData" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading project data...</p>
+  </div>
+  
+  <div *ngIf="error" class="error-container">
+    <p>Failed to load project data. Please try again.</p>
+    <button mat-raised-button color="primary" (click)="loadData()">Retry</button>
+  </div>
+  
+  <app-project-form 
+    *ngIf="!loadingData && !error && project"
+    [project]="project"
+    [customers]="customers"
+    [loading]="loading"
+    submitButtonText="Update Project"
+    (formSubmit)="onSubmit($event)"
+    (cancel)="onCancel()">
+  </app-project-form>
+</div> 

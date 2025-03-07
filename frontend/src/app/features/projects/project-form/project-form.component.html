@@ -1,0 +1,51 @@
+<form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="project-form">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ project ? 'Edit Project' : 'Create New Project' }}</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Project Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter project name">
+          <mat-error *ngIf="projectForm.get('name')?.hasError('required')">
+            Project name is required
+          </mat-error>
+          <mat-error *ngIf="projectForm.get('name')?.hasError('maxlength')">
+            Project name cannot exceed 100 characters
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" placeholder="Enter project description" rows="3"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Customer</mat-label>
+          <mat-select formControlName="customerId">
+            <mat-option *ngFor="let customer of customers" [value]="customer._id">
+              {{ customer.name }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="projectForm.get('customerId')?.hasError('required')">
+            Customer is required
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-button type="button" (click)="onCancel()" [disabled]="loading">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+        <span *ngIf="loading">Saving...</span>
+        <span *ngIf="!loading">{{ submitButtonText }}</span>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form> 

@@ -1,0 +1,23 @@
+.project-create-container {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 24px;
+}
+
+.loading-customers, .no-customers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.loading-customers p, .no-customers p {
+  margin-bottom: 16px;
+  color: rgba(0, 0, 0, 0.6);
+} 

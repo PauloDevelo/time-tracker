@@ -1,0 +1,21 @@
+<div class="project-create-container">
+  <h1>Create New Project</h1>
+  
+  <div *ngIf="loadingCustomers" class="loading-customers">
+    <p>Loading customers...</p>
+  </div>
+  
+  <div *ngIf="!loadingCustomers && customers.length === 0" class="no-customers">
+    <p>You need to create a customer before you can create a project.</p>
+    <button mat-raised-button color="primary" [routerLink]="['/customers/create']">Create Customer</button>
+  </div>
+  
+  <app-project-form 
+    *ngIf="!loadingCustomers && customers.length > 0"
+    [customers]="customers"
+    [loading]="loading"
+    submitButtonText="Create Project"
+    (formSubmit)="onSubmit($event)"
+    (cancel)="onCancel()">
+  </app-project-form>
+</div> 
