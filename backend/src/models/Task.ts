@@ -3,7 +3,6 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface ITask extends Document {
   name: string;
   description: string;
-  category: string;
   url?: string;
   projectId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -19,11 +18,6 @@ const taskSchema = new Schema<ITask>(
       trim: true,
     },
     description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    category: {
       type: String,
       required: true,
       trim: true,
@@ -50,6 +44,5 @@ const taskSchema = new Schema<ITask>(
 
 // Indexes
 taskSchema.index({ userId: 1, projectId: 1 });
-taskSchema.index({ category: 1 });
 
 export const Task = mongoose.model<ITask>('Task', taskSchema); 

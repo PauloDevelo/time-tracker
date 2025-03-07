@@ -46,6 +46,15 @@ export const components = {
                 url: { type: 'string', format: 'url' },
                 customerId: { type: 'string', format: 'uuid' }
             }
-        }
+        },
+        Task: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', required: true },
+            description: { type: 'string', required: true },
+            url: { type: 'string', format: 'url' },
+            projectId: { type: 'string', format: 'uuid', required: true }
+          }
+        },
     }
 };
