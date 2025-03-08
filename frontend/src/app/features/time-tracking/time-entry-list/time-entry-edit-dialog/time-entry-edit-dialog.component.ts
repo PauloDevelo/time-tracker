@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TimeEntryService } from '../../../../core/services/time-entry.service';
 import { Task } from '../../../../core/models/task.model';
 import { TimeEntry, TimeEntryUpdateRequest } from '../../../../core/models/time-entry.model';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface DialogData {
   timeEntry: TimeEntry;
@@ -40,7 +41,8 @@ export class TimeEntryEditDialogComponent implements OnInit {
     private timeEntryService: TimeEntryService,
     private snackBar: MatSnackBar,
     public dialogRef: MatDialogRef<TimeEntryEditDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -97,5 +99,32 @@ export class TimeEntryEditDialogComponent implements OnInit {
 
   onCancel(): void {
     this.dialogRef.close(false);
+  }
+
+  onDelete(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Time Entry',
+        message: 'Are you sure you want to delete this time entry?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.timeEntryService.deleteTimeEntry(this.data.timeEntry._id).subscribe({
+          next: () => {
+            this.snackBar.open('Time entry deleted successfully', 'Close', { duration: 3000 });
+            this.dialogRef.close(true);
+          },
+          error: error => {
+            console.error('Error deleting time entry', error);
+            this.snackBar.open('Error deleting time entry', 'Close', { duration: 3000 });
+          }
+        });
+      }
+    });
   }
 } 

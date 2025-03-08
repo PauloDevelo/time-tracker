@@ -41,24 +41,18 @@
           
           <button 
             mat-icon-button 
-            color="warn" 
-            matTooltip="Delete"
-            (click)="deleteTimeEntry(entry)">
-            <mat-icon>delete</mat-icon>
-          </button>
-
-          <button 
-            mat-icon-button 
             color="accent" 
             matTooltip="Start"
+            *ngIf="!isEntryActive(entry)"
             (click)="startTimeEntry(entry)">
             <mat-icon>play_arrow</mat-icon>
           </button>
 
           <button 
             mat-icon-button 
-            color="accent" 
+            color="warn" 
             matTooltip="Stop"
+            *ngIf="isEntryActive(entry)"
             (click)="stopTimeEntry(entry)">
             <mat-icon>stop</mat-icon>
           </button>

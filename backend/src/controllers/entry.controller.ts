@@ -185,6 +185,7 @@ export const getTimeEntries = async (req: AuthenticatedRequest, res: Response) =
     const skip = (Number(page) - 1) * Number(limit);
     
     const timeEntries = await TimeEntry.find(query)
+      .select('startTime totalDurationInHour startProgressTime taskId userId') // Explicitly include fields
       .sort({ startTime: -1 })
       .skip(skip)
       .limit(Number(limit));

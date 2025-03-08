@@ -29,9 +29,15 @@ import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
 })
 export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   @Input() tasks: Task[] | null = [];
-  @Input() elapsedTime = 0;
-  @Input() isTracking = false;
   @Output() refreshRequest = new EventEmitter<void>();
+
+  get isTracking(): boolean {
+    return this.activeTracking?.startProgressTime !== undefined;
+  }
+
+  get elapsedTime(): number {
+    return this.timeEntryService.getActiveTrackingDuration();
+  }
 
   taskControl = new FormControl<string>('');
   activeTracking: ActiveTimeTracking | null = null;
@@ -78,17 +84,12 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
     }
   }
 
-  stopTracking(): void {
-    const timeEntryObservable = this.timeEntryService.stopTimeTracking();
-    if (timeEntryObservable) {
-      timeEntryObservable.subscribe({
-        next: () => {
-          this.refreshRequest.emit();
-        },
-        error: error => {
-          console.error('Error stopping time tracking', error);
-        }
-      });
+  async stopTracking(): Promise<void> {
+    try{
+      const updatedTimeEntry = await this.timeEntryService.stopTimeTracking();
+      this.refreshRequest.emit();
+    } catch (error) {
+      console.error('Error stopping time tracking', error);
     }
   }
 

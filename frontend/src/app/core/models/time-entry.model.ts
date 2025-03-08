@@ -1,6 +1,7 @@
 export interface TimeEntry {
   _id: string;
   startTime: string; // ISO date string in UTC
+  startProgressTime: string | undefined; // ISO date string in UTC
   totalDurationInHour: number; // Duration in hours
   taskId: string;
   userId: string;
@@ -25,4 +26,6 @@ export interface ActiveTimeTracking {
   entryId: string;
   taskId: string;
   startedAt: Date;
+  startProgressTime: Date | undefined;
+  totalDurationInHour: number;
 } 

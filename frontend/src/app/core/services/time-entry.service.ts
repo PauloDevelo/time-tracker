@@ -19,14 +19,7 @@ export class TimeEntryService {
   selectedDate$ = this.selectedDateSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Check local storage for any ongoing time tracking when service initializes
-    this.loadActiveTimeTrackingFromStorage();
-  }
-
-  // Get all time entries
-  getTimeEntries(): Observable<TimeEntry[]> {
-    return this.http.get<{ timeEntries: TimeEntry[] }>(this.apiUrl)
-      .pipe(map(response => response.timeEntries));
+    this.loadActiveTimeTracking();
   }
 
   // Get time entries for a specific date
@@ -42,16 +35,6 @@ export class TimeEntryService {
       .pipe(map(response => response.timeEntries));
   }
 
-  // Get a specific time entry
-  getTimeEntry(id: string): Observable<TimeEntry> {
-    return this.http.get<TimeEntry>(`${this.apiUrl}/${id}`);
-  }
-
-  // Create a time entry
-  createTimeEntry(timeEntry: TimeEntryCreateRequest): Observable<TimeEntry> {
-    return this.http.post<TimeEntry>(this.apiUrl, timeEntry);
-  }
-
   // Update a time entry
   updateTimeEntry(id: string, timeEntry: TimeEntryUpdateRequest): Observable<TimeEntry> {
     return this.http.put<TimeEntry>(`${this.apiUrl}/${id}`, timeEntry);
@@ -64,54 +47,40 @@ export class TimeEntryService {
 
   // Start time tracking for a task
   async startTimeTracking(taskId: string): Promise<void> {
-    var currentTime = new Date();
+    if (this.activeTimeTrackingSubject.value) {
+      await this.stopTimeTracking();
+    }
 
+    var currentTime = new Date();
     var entry = await lastValueFrom(this.createTimeEntry({ 
       startTime: currentTime.toISOString(),
       totalDurationInHour: 0,
       taskId
     }));
-    
-    const activeTracking: ActiveTimeTracking = {
-      entryId: entry._id,
-      taskId,
-      startedAt: currentTime
-    };
 
-    this.activeTimeTrackingSubject.next(activeTracking);
-    this.saveActiveTimeTrackingToStorage(activeTracking);
-
-    await lastValueFrom(this.http.put(`${this.apiUrl}/${entry._id}/start`, {}));
+    await this.restartTimeTracking(entry);
   }
 
   async restartTimeTracking(entry: TimeEntry): Promise<void> {
-    var currentTime = new Date();
-
-    const activeTracking: ActiveTimeTracking = {
-      entryId: entry._id,
-      taskId: entry.taskId,
-      startedAt: currentTime
-    };
-
-    this.activeTimeTrackingSubject.next(activeTracking);
-    this.saveActiveTimeTrackingToStorage(activeTracking);
+    if (this.activeTimeTrackingSubject.value) {
+      await this.stopTimeTracking();
+    }
 
     await lastValueFrom(this.http.put(`${this.apiUrl}/${entry._id}/start`, {}));
+    await this.loadActiveTimeTracking();
   }
 
   // Stop time tracking and create a time entry
-  stopTimeTracking(): Observable<TimeEntry> | null {
+  async stopTimeTracking(): Promise<TimeEntry | null> {
     const activeTracking = this.activeTimeTrackingSubject.value;
     
     if (!activeTracking) {
       return null;
     }
 
-    // Clear active tracking
-    this.activeTimeTrackingSubject.next(null);
-    this.clearActiveTimeTrackingFromStorage();
-    
-    return this.http.put<TimeEntry>(`${this.apiUrl}/${activeTracking.entryId}/stop`, {});
+    const updatedEntry = await lastValueFrom(this.http.put<TimeEntry>(`${this.apiUrl}/${activeTracking.entryId}/stop`, {}));
+    await this.loadActiveTimeTracking();
+    return updatedEntry;
   }
 
   // Check if there's an active time tracking session
@@ -127,7 +96,12 @@ export class TimeEntryService {
     }
     
     const now = new Date();
-    return Math.floor((now.getTime() - activeTracking.startedAt.getTime()) / 1000);
+    if (activeTracking.startProgressTime) {
+      return Math.floor(activeTracking.totalDurationInHour * 3600 + (now.getTime() - activeTracking.startProgressTime.getTime()) / 1000);
+    }
+    else{
+      return Math.floor(activeTracking.totalDurationInHour * 3600);
+    }
   }
 
   // Change the selected date for viewing time entries
@@ -135,35 +109,31 @@ export class TimeEntryService {
     this.selectedDateSubject.next(date);
   }
 
-  // Save active time tracking to localStorage
-  private saveActiveTimeTrackingToStorage(tracking: ActiveTimeTracking): void {
-    localStorage.setItem('activeTimeTracking', JSON.stringify({
-      entryId: tracking.entryId,
-      startedAt: tracking.startedAt.toISOString()
-    }));
+  // Create a time entry
+  private createTimeEntry(timeEntry: TimeEntryCreateRequest): Observable<TimeEntry> {
+    return this.http.post<TimeEntry>(this.apiUrl, timeEntry);
+  }
+
+  // Get time entries for a specific date
+  private getInProgressTimeEntry(): Observable<TimeEntry | undefined> {
+    // pass the formatted date to the api into the query params
+    return this.http.get<{ timeEntries: TimeEntry[] }>(`${this.apiUrl}?inProgressOnly=true`)
+      .pipe(map(response => response.timeEntries.length > 0 ? response.timeEntries[0] : undefined));
   }
 
   // Load active time tracking from localStorage
-  private loadActiveTimeTrackingFromStorage(): void {
-    const storedTracking = localStorage.getItem('activeTimeTracking');
-    if (storedTracking) {
-      try {
-        const parsed = JSON.parse(storedTracking);
+  private async loadActiveTimeTracking(): Promise<void> {
+    const inProgressEntry = await lastValueFrom(this.getInProgressTimeEntry());
+
+    if (inProgressEntry) {
         const tracking: ActiveTimeTracking = {
-          taskId: parsed.taskId,
-          entryId: parsed.entryId,
-          startedAt: new Date(parsed.startedAt)
+          taskId: inProgressEntry.taskId,
+          entryId: inProgressEntry._id,
+          startedAt: new Date(inProgressEntry.startTime),
+          startProgressTime: new Date(inProgressEntry.startProgressTime!),
+          totalDurationInHour: inProgressEntry.totalDurationInHour
         };
         this.activeTimeTrackingSubject.next(tracking);
-      } catch (error) {
-        console.error('Error loading active time tracking', error);
-        this.clearActiveTimeTrackingFromStorage();
-      }
     }
-  }
-
-  // Clear active time tracking from localStorage
-  private clearActiveTimeTrackingFromStorage(): void {
-    localStorage.removeItem('activeTimeTracking');
   }
 } 
