@@ -20,6 +20,10 @@ export interface TaskUpdateRequest extends Partial<TaskCreateRequest> {
   _id: string;
 }
 
+export interface TaskWithProjectName extends Task {
+  projectName: string;
+}
+
 export interface TasksByProject {
   project: {
     _id: string;

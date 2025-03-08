@@ -9,7 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Subject, takeUntil } from 'rxjs';
 
 import { TimeEntryService } from '../../../core/services/time-entry.service';
-import { Task } from '../../../core/models/task.model';
+import { Task, TaskWithProjectName } from '../../../core/models/task.model';
 import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
 
 @Component({
@@ -28,7 +28,7 @@ import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
   styleUrls: ['./active-time-tracking.component.scss']
 })
 export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
-  @Input() tasks: Task[] | null = [];
+  @Input() tasks: TaskWithProjectName[] | null = [];
   @Output() refreshRequest = new EventEmitter<void>();
 
   get isTracking(): boolean {

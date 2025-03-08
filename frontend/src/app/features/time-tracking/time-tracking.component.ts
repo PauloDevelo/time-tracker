@@ -17,7 +17,7 @@ import { Observable, Subject, interval, takeUntil } from 'rxjs';
 import { TimeEntryService } from '../../core/services/time-entry.service';
 import { TaskService } from '../../core/services/task.service';
 import { TimeEntry } from '../../core/models/time-entry.model';
-import { Task } from '../../core/models/task.model';
+import { Task, TaskWithProjectName } from '../../core/models/task.model';
 import { TimeEntryListComponent } from './time-entry-list/time-entry-list.component';
 import { ActiveTimeTrackingComponent } from './active-time-tracking/active-time-tracking.component';
 
@@ -47,7 +47,7 @@ import { ActiveTimeTrackingComponent } from './active-time-tracking/active-time-
 })
 export class TimeTrackingComponent implements OnInit, OnDestroy {
   timeEntries$!: Observable<TimeEntry[]>;
-  tasks$!: Observable<Task[]>;
+  tasks$!: Observable<TaskWithProjectName[]>;
   selectedDate: Date = new Date();
   isTracking = false;
   elapsedTime = 0;
@@ -67,7 +67,7 @@ export class TimeTrackingComponent implements OnInit, OnDestroy {
     });
 
     // Load all tasks for selection
-    this.tasks$ = this.taskService.getTasks();
+    this.tasks$ = this.taskService.getTasksWithProjectName();
 
     // Check if there's an active time tracking session
     this.isTracking = this.timeEntryService.hasActiveTimeTracking();

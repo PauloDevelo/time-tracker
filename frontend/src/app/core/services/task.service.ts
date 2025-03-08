@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Task, TaskCreateRequest, TaskUpdateRequest, TasksByProject } from '../models/task.model';
+import { Task, TaskCreateRequest, TaskUpdateRequest, TaskWithProjectName, TasksByProject } from '../models/task.model';
 import { ProjectService } from './project.service';
 import { Project } from '../models/project.model';
 
@@ -80,6 +80,26 @@ export class TaskService {
             return tasksByProject;
           })
         );
+      })
+    );
+  }
+
+  getTasksWithProjectName(): Observable<TaskWithProjectName[]> {
+    const tasksByProject$ = this.getTasksByAllProjects();
+    return tasksByProject$.pipe(
+      map(tasksByProject => {
+        const tasksWithProjectName: TaskWithProjectName[] = [];
+        
+        tasksByProject.forEach(project => {
+          project.tasks.forEach(task => {
+            tasksWithProjectName.push({
+              ...task,
+              projectName: project.project.name
+            });
+          });
+        });
+        
+        return tasksWithProjectName;
       })
     );
   }
