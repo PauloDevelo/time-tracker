@@ -108,7 +108,7 @@ export class TimeEntryListComponent implements OnInit {
   }
 
   startTimeEntry(timeEntry: TimeEntry): void {
-    this.timeEntryService.startTimeTracking(timeEntry.taskId);
+    this.timeEntryService.restartTimeTracking(timeEntry);
     this.snackBar.open('Time entry started', 'Close', { duration: 3000 });
   }
 

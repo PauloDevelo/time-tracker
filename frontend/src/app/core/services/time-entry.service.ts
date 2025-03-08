@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, lastValueFrom, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TimeEntry, TimeEntryCreateRequest, TimeEntryUpdateRequest, ActiveTimeTracking } from '../models/time-entry.model';
 
@@ -63,14 +63,40 @@ export class TimeEntryService {
   }
 
   // Start time tracking for a task
-  startTimeTracking(taskId: string): void {
+  async startTimeTracking(taskId: string): Promise<void> {
+    var currentTime = new Date();
+
+    var entry = await lastValueFrom(this.createTimeEntry({ 
+      startTime: currentTime.toISOString(),
+      totalDurationInHour: 0,
+      taskId
+    }));
+    
     const activeTracking: ActiveTimeTracking = {
+      entryId: entry._id,
       taskId,
-      startedAt: new Date()
+      startedAt: currentTime
     };
 
     this.activeTimeTrackingSubject.next(activeTracking);
     this.saveActiveTimeTrackingToStorage(activeTracking);
+
+    await lastValueFrom(this.http.put(`${this.apiUrl}/${entry._id}/start`, {}));
+  }
+
+  async restartTimeTracking(entry: TimeEntry): Promise<void> {
+    var currentTime = new Date();
+
+    const activeTracking: ActiveTimeTracking = {
+      entryId: entry._id,
+      taskId: entry.taskId,
+      startedAt: currentTime
+    };
+
+    this.activeTimeTrackingSubject.next(activeTracking);
+    this.saveActiveTimeTrackingToStorage(activeTracking);
+
+    await lastValueFrom(this.http.put(`${this.apiUrl}/${entry._id}/start`, {}));
   }
 
   // Stop time tracking and create a time entry
@@ -81,38 +107,11 @@ export class TimeEntryService {
       return null;
     }
 
-    const now = new Date();
-    const startTime = activeTracking.startedAt;
-    
-    // Calculate duration in hours
-    const durationInMs = now.getTime() - startTime.getTime();
-    const durationInHours = durationInMs / (1000 * 60 * 60);
-    
-    // Round to two decimal places
-    const roundedDuration = Math.round(durationInHours * 100) / 100;
-    
-    const timeEntry: TimeEntryCreateRequest = {
-      startTime: startTime.toISOString(),
-      totalDurationInHour: roundedDuration,
-      taskId: activeTracking.taskId
-    };
-
     // Clear active tracking
     this.activeTimeTrackingSubject.next(null);
     this.clearActiveTimeTrackingFromStorage();
     
-    // Create the time entry in the database
-    return this.createTimeEntry(timeEntry).pipe(
-      tap(() => {
-        // If the time entry was for the currently selected date, we might want to refresh the list
-        const selectedDate = this.selectedDateSubject.value;
-        const entryDate = new Date(startTime);
-        
-        if (selectedDate.toDateString() === entryDate.toDateString()) {
-          // Could emit an event to notify components to refresh their data
-        }
-      })
-    );
+    return this.http.put<TimeEntry>(`${this.apiUrl}/${activeTracking.entryId}/stop`, {});
   }
 
   // Check if there's an active time tracking session
@@ -139,7 +138,7 @@ export class TimeEntryService {
   // Save active time tracking to localStorage
   private saveActiveTimeTrackingToStorage(tracking: ActiveTimeTracking): void {
     localStorage.setItem('activeTimeTracking', JSON.stringify({
-      taskId: tracking.taskId,
+      entryId: tracking.entryId,
       startedAt: tracking.startedAt.toISOString()
     }));
   }
@@ -152,6 +151,7 @@ export class TimeEntryService {
         const parsed = JSON.parse(storedTracking);
         const tracking: ActiveTimeTracking = {
           taskId: parsed.taskId,
+          entryId: parsed.entryId,
           startedAt: new Date(parsed.startedAt)
         };
         this.activeTimeTrackingSubject.next(tracking);

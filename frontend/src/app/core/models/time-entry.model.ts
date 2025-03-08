@@ -22,6 +22,7 @@ export interface TimeEntryUpdateRequest {
 }
 
 export interface ActiveTimeTracking {
+  entryId: string;
   taskId: string;
   startedAt: Date;
 } 
