@@ -101,6 +101,12 @@ export class TimeTrackingComponent implements OnInit, OnDestroy {
     this.loadTimeEntries();
   }
 
+  changeDate(days: number): void {
+    const newDate = new Date(this.selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    this.onDateChange(newDate);
+  }
+
   private startTimer(): void {
     // Update timer every second
     interval(1000)
@@ -109,4 +115,4 @@ export class TimeTrackingComponent implements OnInit, OnDestroy {
         this.elapsedTime = this.timeEntryService.getActiveTrackingDuration();
       });
   }
-} 
+}

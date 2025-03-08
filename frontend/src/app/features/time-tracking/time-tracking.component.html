@@ -2,12 +2,18 @@
   <div class="time-tracking-header">
     <h1>Time Tracking</h1>
     <div class="date-selector">
+      <button mat-icon-button (click)="changeDate(-1)">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
       <mat-form-field appearance="fill">
         <mat-label>Choose a date</mat-label>
         <input matInput [matDatepicker]="picker" [value]="selectedDate" (dateChange)="onDateChange($event.value)">
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
+      <button mat-icon-button (click)="changeDate(1)">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
   </div>
 
@@ -25,4 +31,4 @@
     [tasks]="tasks$ | async"
     (refreshRequest)="refreshTimeEntries()">
   </app-time-entry-list>
-</div> 
+</div>
