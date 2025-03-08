@@ -30,7 +30,7 @@ import { AuthService } from '../../core/services/auth.service';
         <a mat-button routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a mat-button routerLink="/customers" routerLinkActive="active">Customers</a>
         <a mat-button routerLink="/projects" routerLinkActive="active">Projects</a>
-        <a mat-button routerLink="/time-entries" routerLinkActive="active">Time Entries</a>
+        <a mat-button routerLink="/time-tracking" routerLinkActive="active">Time Tracking</a>
         <a mat-button routerLink="/reports" routerLinkActive="active">Reports</a>
       </div>
       

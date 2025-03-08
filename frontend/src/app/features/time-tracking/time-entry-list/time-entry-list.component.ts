@@ -1,0 +1,109 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+import { TimeEntryService } from '../../../core/services/time-entry.service';
+import { TimeEntry } from '../../../core/models/time-entry.model';
+import { Task } from '../../../core/models/task.model';
+import { TimeEntryEditDialogComponent } from './time-entry-edit-dialog/time-entry-edit-dialog.component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+
+@Component({
+  selector: 'app-time-entry-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDialogModule,
+    MatIconModule,
+    MatTableModule,
+    MatTooltipModule
+  ],
+  templateUrl: './time-entry-list.component.html',
+  styleUrls: ['./time-entry-list.component.scss']
+})
+export class TimeEntryListComponent implements OnInit {
+  @Input() timeEntries: TimeEntry[] | null = [];
+  @Input() tasks: Task[] | null = [];
+  @Output() refreshRequest = new EventEmitter<void>();
+
+  displayedColumns: string[] = ['task', 'startTime', 'duration', 'actions'];
+
+  constructor(
+    private timeEntryService: TimeEntryService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
+  ) { }
+
+  ngOnInit(): void {
+  }
+
+  getTaskName(taskId: string): string {
+    if (!this.tasks) return '';
+    const task = this.tasks.find(t => t._id === taskId);
+    return task ? task.name : '';
+  }
+
+  formatStartTime(isoString: string): string {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  formatDuration(hours: number): string {
+    const totalMinutes = Math.round(hours * 60);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    
+    return `${h}h ${m}m`;
+  }
+
+  editTimeEntry(timeEntry: TimeEntry): void {
+    const dialogRef = this.dialog.open(TimeEntryEditDialogComponent, {
+      width: '500px',
+      data: {
+        timeEntry,
+        tasks: this.tasks
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.refreshRequest.emit();
+      }
+    });
+  }
+
+  deleteTimeEntry(timeEntry: TimeEntry): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Time Entry',
+        message: 'Are you sure you want to delete this time entry?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.timeEntryService.deleteTimeEntry(timeEntry._id).subscribe({
+          next: () => {
+            this.snackBar.open('Time entry deleted successfully', 'Close', { duration: 3000 });
+            this.refreshRequest.emit();
+          },
+          error: error => {
+            console.error('Error deleting time entry', error);
+            this.snackBar.open('Error deleting time entry', 'Close', { duration: 3000 });
+          }
+        });
+      }
+    });
+  }
+} 

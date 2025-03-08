@@ -1,0 +1,48 @@
+.time-entries-table {
+  width: 100%;
+}
+
+.no-entries-message {
+  padding: 20px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.6);
+  font-style: italic;
+}
+
+mat-card-content {
+  padding: 16px;
+}
+
+/* Column widths */
+.mat-column-task {
+  width: 40%;
+}
+
+.mat-column-startTime {
+  width: 20%;
+}
+
+.mat-column-duration {
+  width: 20%;
+}
+
+.mat-column-actions {
+  width: 20%;
+  text-align: right;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mat-column-task {
+    width: 30%;
+  }
+  
+  .mat-column-startTime,
+  .mat-column-duration {
+    width: 25%;
+  }
+  
+  .mat-column-actions {
+    width: 20%;
+  }
+} 

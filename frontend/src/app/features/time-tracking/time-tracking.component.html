@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="time-tracking-header">
+    <h1>Time Tracking</h1>
+    <div class="date-selector">
+      <mat-form-field appearance="fill">
+        <mat-label>Choose a date</mat-label>
+        <input matInput [matDatepicker]="picker" [value]="selectedDate" (dateChange)="onDateChange($event.value)">
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Active Time Tracking Component -->
+  <app-active-time-tracking 
+    [tasks]="tasks$ | async" 
+    [elapsedTime]="elapsedTime"
+    [isTracking]="isTracking"
+    (refreshRequest)="refreshTimeEntries()">
+  </app-active-time-tracking>
+
+  <!-- Time Entry Form Component -->
+  <app-time-entry-form 
+    [tasks]="tasks$ | async" 
+    [selectedDate]="selectedDate"
+    (refreshRequest)="refreshTimeEntries()">
+  </app-time-entry-form>
+
+  <!-- Time Entry List Component -->
+  <app-time-entry-list 
+    [timeEntries]="timeEntries$ | async" 
+    [tasks]="tasks$ | async"
+    (refreshRequest)="refreshTimeEntries()">
+  </app-time-entry-list>
+</div> 

@@ -1,0 +1,56 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Time Entries</mat-card-title>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <div class="no-entries-message" *ngIf="!timeEntries || timeEntries.length === 0">
+      No time entries for this date. Start tracking or add a manual entry.
+    </div>
+    
+    <table mat-table [dataSource]="timeEntries || []" class="time-entries-table" *ngIf="timeEntries && timeEntries.length > 0">
+      <!-- Task Column -->
+      <ng-container matColumnDef="task">
+        <th mat-header-cell *matHeaderCellDef>Task</th>
+        <td mat-cell *matCellDef="let entry">{{ getTaskName(entry.taskId) }}</td>
+      </ng-container>
+      
+      <!-- Start Time Column -->
+      <ng-container matColumnDef="startTime">
+        <th mat-header-cell *matHeaderCellDef>Start Time</th>
+        <td mat-cell *matCellDef="let entry">{{ formatStartTime(entry.startTime) }}</td>
+      </ng-container>
+      
+      <!-- Duration Column -->
+      <ng-container matColumnDef="duration">
+        <th mat-header-cell *matHeaderCellDef>Duration</th>
+        <td mat-cell *matCellDef="let entry">{{ formatDuration(entry.totalDurationInHour) }}</td>
+      </ng-container>
+      
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let entry">
+          <button 
+            mat-icon-button 
+            color="primary" 
+            matTooltip="Edit"
+            (click)="editTimeEntry(entry)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          
+          <button 
+            mat-icon-button 
+            color="warn" 
+            matTooltip="Delete"
+            (click)="deleteTimeEntry(entry)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </mat-card-content>
+</mat-card> 

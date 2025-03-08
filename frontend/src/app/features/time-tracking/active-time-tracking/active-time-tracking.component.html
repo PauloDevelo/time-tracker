@@ -1,0 +1,50 @@
+<mat-card class="active-tracking-card">
+  <mat-card-header>
+    <mat-card-title>
+      {{ isTracking ? 'Currently Tracking' : 'Start Tracking' }}
+    </mat-card-title>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <div class="active-tracking-content">
+      <div class="task-selector">
+        <mat-form-field appearance="fill">
+          <mat-label>Select Task</mat-label>
+          <mat-select [formControl]="taskControl">
+            <mat-option *ngFor="let task of tasks" [value]="task._id">
+              {{ task.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      
+      <div class="timer-display" *ngIf="isTracking">
+        <div class="timer">{{ formatElapsedTime(elapsedTime) }}</div>
+        <div class="task-name">
+          <span *ngIf="activeTracking">Task: {{ getTaskName(activeTracking.taskId) }}</span>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+  
+  <mat-card-actions align="end">
+    <button 
+      mat-raised-button 
+      color="primary" 
+      *ngIf="!isTracking" 
+      [disabled]="!taskControl.value"
+      (click)="startTracking()">
+      <mat-icon>play_arrow</mat-icon>
+      Start Timer
+    </button>
+    
+    <button 
+      mat-raised-button 
+      color="warn" 
+      *ngIf="isTracking" 
+      (click)="stopTracking()">
+      <mat-icon>stop</mat-icon>
+      Stop and Save
+    </button>
+  </mat-card-actions>
+</mat-card> 
