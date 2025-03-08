@@ -149,10 +149,10 @@ export class ProjectDetailComponent implements OnInit {
   createTask(taskRequest: TaskCreateRequest): void {
     this.taskService.createTask(taskRequest).subscribe({
       next: (createdTask) => {
-        this.tasks.push(createdTask);
         this.snackBar.open('Task created successfully', 'Close', {
           duration: 3000
         });
+        this.loadTasks(); // Reload tasks after creating a new task
       },
       error: (err) => {
         console.error('Error creating task', err);
@@ -166,13 +166,10 @@ export class ProjectDetailComponent implements OnInit {
   updateTask(taskRequest: TaskUpdateRequest): void {
     this.taskService.updateTask(taskRequest._id, taskRequest).subscribe({
       next: (updatedTask) => {
-        const index = this.tasks.findIndex(t => t._id === updatedTask._id);
-        if (index !== -1) {
-          this.tasks[index] = updatedTask;
-        }
         this.snackBar.open('Task updated successfully', 'Close', {
           duration: 3000
         });
+        this.loadTasks(); // Reload tasks after updating a task
       },
       error: (err) => {
         console.error('Error updating task', err);
@@ -205,4 +202,4 @@ export class ProjectDetailComponent implements OnInit {
   openTaskUrl(url: string): void {
     window.open(url, '_blank');
   }
-} 
+}

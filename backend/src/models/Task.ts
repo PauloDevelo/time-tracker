@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITask extends Document {
   name: string;
-  description: string;
+  description?: string;
   url?: string;
   projectId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -19,7 +19,6 @@ const taskSchema = new Schema<ITask>(
     },
     description: {
       type: String,
-      required: true,
       trim: true,
     },
     url: {
@@ -45,4 +44,4 @@ const taskSchema = new Schema<ITask>(
 // Indexes
 taskSchema.index({ userId: 1, projectId: 1 });
 
-export const Task = mongoose.model<ITask>('Task', taskSchema); 
+export const Task = mongoose.model<ITask>('Task', taskSchema);

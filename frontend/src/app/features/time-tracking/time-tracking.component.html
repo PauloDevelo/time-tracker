@@ -19,13 +19,6 @@
     (refreshRequest)="refreshTimeEntries()">
   </app-active-time-tracking>
 
-  <!-- Time Entry Form Component -->
-  <app-time-entry-form 
-    [tasks]="tasks$ | async" 
-    [selectedDate]="selectedDate"
-    (refreshRequest)="refreshTimeEntries()">
-  </app-time-entry-form>
-
   <!-- Time Entry List Component -->
   <app-time-entry-list 
     [timeEntries]="timeEntries$ | async" 

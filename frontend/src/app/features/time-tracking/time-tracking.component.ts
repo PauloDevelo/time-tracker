@@ -18,7 +18,6 @@ import { TimeEntryService } from '../../core/services/time-entry.service';
 import { TaskService } from '../../core/services/task.service';
 import { TimeEntry } from '../../core/models/time-entry.model';
 import { Task } from '../../core/models/task.model';
-import { TimeEntryFormComponent } from './time-entry-form/time-entry-form.component';
 import { TimeEntryListComponent } from './time-entry-list/time-entry-list.component';
 import { ActiveTimeTrackingComponent } from './active-time-tracking/active-time-tracking.component';
 
@@ -40,7 +39,6 @@ import { ActiveTimeTrackingComponent } from './active-time-tracking/active-time-
     MatSelectModule,
     MatTableModule,
     MatTooltipModule,
-    TimeEntryFormComponent,
     TimeEntryListComponent,
     ActiveTimeTrackingComponent
   ],
