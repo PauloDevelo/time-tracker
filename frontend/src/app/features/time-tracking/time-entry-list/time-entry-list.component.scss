@@ -5,8 +5,8 @@
 .no-entries-message {
   padding: 20px;
   text-align: center;
-  color: rgba(0, 0, 0, 0.6);
   font-style: italic;
+  color: rgba(0, 0, 0, 0.54);
 }
 
 mat-card-content {
@@ -44,5 +44,61 @@ mat-card-content {
   
   .mat-column-actions {
     width: 20%;
+  }
+}
+
+.mat-mdc-cell {
+  button {
+    margin-right: 8px;
+  }
+}
+
+/* Specific styling for action buttons to make them more visible */
+button[matTooltip="Stop"] {
+  .mat-icon {
+    color: #f44336;
+  }
+  
+  &:hover .mat-icon {
+    color: #ff5252;
+  }
+}
+
+button[matTooltip="Start"] {
+  .mat-icon {
+    color: #3f51b5;
+  }
+  
+  &:hover .mat-icon {
+    color: #4285f4;
+  }
+}
+
+/* Enhanced dark mode styling */
+:host-context(.dark-theme) {
+  .no-entries-message {
+    color: rgba(255, 255, 255, 0.54);
+  }
+  
+  button[matTooltip="Stop"] {
+    .mat-icon {
+      color: #ff5252 !important; /* Brighter red */
+    }
+    
+    &:hover .mat-icon {
+      color: #ff7575 !important; /* Even brighter on hover */
+      filter: drop-shadow(0 0 2px rgba(255, 82, 82, 0.7)); /* Add glow effect */
+    }
+  }
+  
+  button[matTooltip="Start"] {
+    .mat-icon {
+      color: #4285f4 !important; /* Brighter blue */
+    }
+    
+    &:hover .mat-icon {
+      color: #5c9aff !important; /* Even brighter on hover */
+      filter: drop-shadow(0 0 2px rgba(92, 154, 255, 0.7)); /* Add glow effect */
+    }
   }
 } 
