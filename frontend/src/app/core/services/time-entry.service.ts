@@ -135,5 +135,8 @@ export class TimeEntryService {
         };
         this.activeTimeTrackingSubject.next(tracking);
     }
+    else {
+      this.activeTimeTrackingSubject.next(null);
+    }
   }
 } 

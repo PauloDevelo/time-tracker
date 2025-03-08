@@ -32,7 +32,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   @Output() refreshRequest = new EventEmitter<void>();
 
   get isTracking(): boolean {
-    return this.activeTracking?.startProgressTime !== undefined;
+    return !!this.activeTracking?.startProgressTime;
   }
 
   get elapsedTime(): number {

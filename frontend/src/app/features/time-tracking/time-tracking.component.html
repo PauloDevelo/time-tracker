@@ -20,8 +20,6 @@
   <!-- Active Time Tracking Component -->
   <app-active-time-tracking 
     [tasks]="tasks$ | async" 
-    [elapsedTime]="elapsedTime"
-    [isTracking]="isTracking"
     (refreshRequest)="refreshTimeEntries()">
   </app-active-time-tracking>
 
