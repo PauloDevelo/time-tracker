@@ -47,8 +47,6 @@ export class ProjectFormComponent implements OnInit {
       name: [this.project?.name || '', [Validators.required, Validators.maxLength(100)]],
       description: [this.project?.description || ''],
       customerId: [this.project?.customerId._id || '', [Validators.required]],
-      startDate: [this.project?.startDate ? new Date(this.project.startDate) : null],
-      endDate: [this.project?.endDate ? new Date(this.project.endDate) : null]
     });
   }
 

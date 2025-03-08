@@ -43,6 +43,14 @@ body {
     color: #e0e0e0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   }
+
+  p {
+    color: #a1a1a1 !important;
+  }
+
+  span.value {
+    color: #a1a1a1 !important;
+  }
   
   /* Toolbar */
   .mat-toolbar.mat-primary {
@@ -111,6 +119,10 @@ body {
 
   .mat-dialog-title, .mat-dialog-content, .mat-dialog-actions {
     color: #e0e0e0 !important;
+  }
+
+  .mat-mdc-card-subtitle {
+    color: #a1a1a1 !important;
   }
   
   mat-dialog-content p {

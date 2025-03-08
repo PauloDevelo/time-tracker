@@ -59,11 +59,6 @@ mat-card-content {
   -webkit-box-orient: vertical;
 }
 
-.dates {
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.6);
-}
-
 .customer-name {
   font-weight: 500;
 }
@@ -72,21 +67,6 @@ mat-card-content {
   margin-left: 8px;
   font-size: 0.9rem;
   color: rgba(0, 0, 0, 0.6);
-}
-
-.status-active {
-  background-color: #e6f7ff;
-  color: #0050b3;
-}
-
-.status-completed {
-  background-color: #f6ffed;
-  color: #389e0d;
-}
-
-.status-on-hold {
-  background-color: #fff7e6;
-  color: #d46b08;
 }
 
 mat-expansion-panel {
@@ -103,4 +83,4 @@ mat-expansion-panel {
     align-items: flex-start;
     gap: 16px;
   }
-} 
+}

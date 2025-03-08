@@ -34,25 +34,6 @@
         <mat-divider></mat-divider>
 
         <div class="section">
-          <h3>Timeline</h3>
-          <div class="timeline-details">
-            <div *ngIf="project.startDate" class="timeline-item">
-              <span class="label">Start Date:</span>
-              <span class="value">{{ project.startDate | date:'mediumDate' }}</span>
-            </div>
-            <div *ngIf="project.endDate" class="timeline-item">
-              <span class="label">End Date:</span>
-              <span class="value">{{ project.endDate | date:'mediumDate' }}</span>
-            </div>
-            <div *ngIf="!project.startDate && !project.endDate" class="no-data">
-              No timeline information provided
-            </div>
-          </div>
-        </div>
-
-        <mat-divider></mat-divider>
-
-        <div class="section">
           <h3>Additional Information</h3>
           <div class="additional-details">
             <div class="additional-item">

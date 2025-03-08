@@ -42,14 +42,6 @@
               
               <mat-card-content>
                 <p *ngIf="project.description" class="description">{{ project.description }}</p>
-                <div class="dates" *ngIf="project.startDate || project.endDate">
-                  <div *ngIf="project.startDate">
-                    <strong>Start:</strong> {{ project.startDate | date:'mediumDate' }}
-                  </div>
-                  <div *ngIf="project.endDate">
-                    <strong>End:</strong> {{ project.endDate | date:'mediumDate' }}
-                  </div>
-                </div>
               </mat-card-content>
               
               <mat-card-actions>
