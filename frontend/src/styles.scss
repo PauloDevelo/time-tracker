@@ -9,6 +9,14 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Autofill styles for all themes */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -34,6 +42,26 @@ body {
   /* Apply to the body element */
   background-color: #121212;
   color: #e0e0e0;
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: #e0e0e0 !important;
+    -webkit-box-shadow: 0 0 0 30px #2d2d2d inset !important;
+  }
+
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover, 
+  textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active {
+    -webkit-text-fill-color: #e0e0e0 !important;
+    -webkit-box-shadow: 0 0 0 30px #2d2d2d inset !important;
+  }
+
+  h2 {
+    color: #e0e0e0 !important;
+  }
   
   /* Card and container styles */
   .form-container, 
@@ -42,6 +70,10 @@ body {
     background-color: #1e1e1e;
     color: #e0e0e0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .mat-expansion-panel-header-title {
+    color: #a1a1a1 !important;
   }
 
   p {

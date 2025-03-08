@@ -84,3 +84,45 @@ mat-expansion-panel {
     gap: 16px;
   }
 }
+
+/* Dark theme specific styles for project list */
+:host-context(.dark-theme) {
+  .project-list-container {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  .loading-container p, .error-container p, .empty-state p {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .description {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .project-count {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .project-card {
+    background-color: #1e1e1e;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .project-card:hover {
+    background-color: #2d2d2d;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  mat-expansion-panel {
+    background-color: #1a1a1a;
+  }
+
+  .mat-expansion-panel-header {
+    background-color: #1a1a1a;
+  }
+
+  .projects-by-customer .mat-accordion .mat-expansion-panel {
+    background-color: #1a1a1a;
+  }
+}
