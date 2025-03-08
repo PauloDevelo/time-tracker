@@ -6,6 +6,7 @@ import customerRoutes from './customer.routes';
 import projectRoutes from './project.routes';
 import taskRoutes from './task.routes';
 import timeEntryRoutes from './time-entry.routes';
+import reportRoutes from './report.routes';
 
 export const initializeRoutes = (app: Express) => {
     app.get('/', (_req, res) => {
@@ -17,4 +18,5 @@ export const initializeRoutes = (app: Express) => {
     app.use('/api/projects', projectRoutes);
     app.use('/api/tasks', taskRoutes);
     app.use('/api/time-entries', timeEntryRoutes);
+    app.use('/api/reports', reportRoutes);
 };
