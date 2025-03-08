@@ -40,7 +40,9 @@
   
   h2 {
     margin-bottom: 16px;
-    color: rgba(0, 0, 0, 0.87);
+    :not(.dark-theme){
+      color: rgba(0, 0, 0, 0.87);
+    }
     font-size: 18px;
     font-weight: 500;
   }
@@ -52,11 +54,18 @@
     .detail-label {
       width: 150px;
       font-weight: 500;
-      color: rgba(0, 0, 0, 0.6);
+      :not(.dark-theme){
+        color: rgba(0, 0, 0, 0.6);
+      }
     }
     
     .detail-value {
       flex: 1;
+      
+      // Dark theme support
+      .dark-theme & {
+        color: #e0e0e0 !important;
+      }
     }
   }
 }

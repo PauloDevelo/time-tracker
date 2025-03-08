@@ -61,6 +61,12 @@ body {
   .mat-input-element {
     color: #e0e0e0;
   }
+
+  .mat-mdc-button, .mat-mdc-icon-button {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
   
   /* Buttons */
   .mat-button:not([disabled]), 
@@ -84,20 +90,40 @@ body {
   .mat-mdc-header-cell, .mat-mdc-cell {
     color: #e0e0e0;
   }
+
+  .mdc-button__label {
+    color: #e0e0e0 !important;
+  }
   
   /* Dialog */
   .mat-mdc-dialog-container {
-    background-color: #1e1e1e;
-    color: #e0e0e0;
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+  }
+  
+  .mat-mdc-dialog-surface {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+  }
+  .mat-mdc-dialog-container .mat-mdc-dialog-title {
+    color: #e0e0e0 !important;
+  }
+
+  .mat-dialog-title, .mat-dialog-content, .mat-dialog-actions {
+    color: #e0e0e0 !important;
+  }
+  
+  mat-dialog-content p {
+    color: #e0e0e0 !important;
   }
   
   /* Menus */
   .mat-mdc-menu-panel {
-    background-color: #1e1e1e;
+    background-color: #121212 !important;
   }
   
   .mat-mdc-menu-item {
-    color: #e0e0e0;
+    color: #e0e0e0 !important;
   }
   
   /* Dividers */
@@ -155,6 +181,124 @@ body {
   button[matTooltip="Start"] {
     .mat-icon {
       color: #4285f4 !important; /* Brighter blue */
+    }
+  }
+  
+  /* Enhanced styling for select/combo boxes in dark mode */
+  .mat-mdc-select-panel,
+  .mat-mdc-option {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+  }
+  
+  .mat-mdc-option:hover:not(.mat-mdc-option-disabled),
+  .mat-mdc-option.mat-mdc-option-active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .mat-mdc-select-value,
+  .mat-mdc-select-arrow {
+    color: #e0e0e0 !important;
+  }
+  
+  /* Text input fields */
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .mdc-line-ripple::before, 
+    .mdc-line-ripple::after {
+      border-bottom-color: rgba(255, 255, 255, 0.42) !important;
+    }
+    
+    .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+      background-color: rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .mat-mdc-form-field-focus-overlay {
+      background-color: rgba(255, 255, 255, 0.07) !important;
+    }
+    
+    .mat-mdc-input-element, 
+    .mat-mdc-textarea-element {
+      color: #e0e0e0 !important;
+    }
+    
+    .mat-mdc-form-field-label,
+    .mat-mdc-floating-label {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+  }
+  
+  /* Enhanced styling for date pickers in dark mode */
+  .mat-datepicker-content {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7) !important;
+
+    .mat-calendar-next-button,
+    .mat-calendar-previous-button {
+      color: #e0e0e0 !important;
+    }
+  }
+  
+  .mat-calendar {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+  }
+  
+  .mat-calendar-body-cell-content,
+  .mat-calendar-body-label,
+  .mat-calendar-table-header,
+  .mat-calendar-period-button,
+  .mat-calendar-arrow {
+    color: #e0e0e0 !important;
+  }
+  
+  .mat-calendar-body-selected {
+    background-color: #3f51b5 !important;
+    color: white !important;
+  }
+  
+  .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* Datepicker toggle button */
+  .mat-datepicker-toggle {
+    color: #e0e0e0 !important;
+  }
+  
+  /* Form field improvements for dark mode */
+  .mat-mdc-form-field-focus-overlay {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .mat-mdc-text-field-wrapper {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  /* Improved overlay container for all popups and modals */
+  .cdk-overlay-container {
+    .cdk-overlay-pane {
+      .mat-mdc-dialog-container,
+      .mat-mdc-select-panel,
+      .mat-datepicker-content,
+      .mat-mdc-menu-panel {
+        background-color: #121212 !important;
+        color: #e0e0e0 !important;
+        border-radius: 4px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8) !important;
+      }
+    }
+    
+    .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+      opacity: 0.9 !important;
     }
   }
 }
