@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeToggleComponent } from '../components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-navigation',
@@ -20,7 +21,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    ThemeToggleComponent
   ],
   template: `
     <mat-toolbar color="primary">
@@ -35,6 +37,9 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
       
       <span class="spacer"></span>
+      
+      <!-- Theme toggle button -->
+      <app-theme-toggle></app-theme-toggle>
       
       <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
         <mat-icon>account_circle</mat-icon>

@@ -6,6 +6,7 @@ body {
   margin: 0; 
   font-family: Roboto, "Helvetica Neue", sans-serif; 
   background-color: #f5f5f5;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -25,4 +26,95 @@ body {
   background-color: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark theme styles */
+.dark-theme {
+  /* Apply to the body element */
+  background-color: #121212;
+  color: #e0e0e0;
+  
+  /* Card and container styles */
+  .form-container, 
+  .mat-mdc-card, 
+  .mat-mdc-expansion-panel {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Toolbar */
+  .mat-toolbar.mat-primary {
+    background-color: #272727;
+  }
+  
+  /* Input fields */
+  .mat-form-field-appearance-outline .mat-form-field-outline {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .mat-form-field-label {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .mat-input-element {
+    color: #e0e0e0;
+  }
+  
+  /* Buttons */
+  .mat-button:not([disabled]), 
+  .mat-raised-button:not([disabled]), 
+  .mat-flat-button:not([disabled]),
+  .mat-stroked-button:not([disabled]) {
+    &:not(.mat-primary):not(.mat-accent):not(.mat-warn) {
+      color: #e0e0e0;
+    }
+  }
+  
+  /* Tables */
+  .mat-mdc-table {
+    background-color: #1e1e1e;
+  }
+  
+  .mat-mdc-row, .mat-mdc-header-row {
+    background-color: #1e1e1e;
+  }
+  
+  .mat-mdc-header-cell, .mat-mdc-cell {
+    color: #e0e0e0;
+  }
+  
+  /* Dialog */
+  .mat-mdc-dialog-container {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
+  
+  /* Menus */
+  .mat-mdc-menu-panel {
+    background-color: #1e1e1e;
+  }
+  
+  .mat-mdc-menu-item {
+    color: #e0e0e0;
+  }
+  
+  /* Dividers */
+  .mat-divider {
+    border-top-color: rgba(255, 255, 255, 0.12);
+  }
+  
+  /* Icons */
+  .mat-icon {
+    color: #e0e0e0;
+  }
+}
+
+/* Theme toggle button styling */
+.theme-toggle {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 16px;
 }
