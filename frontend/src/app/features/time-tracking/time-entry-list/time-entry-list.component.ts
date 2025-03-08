@@ -106,4 +106,27 @@ export class TimeEntryListComponent implements OnInit {
       }
     });
   }
-} 
+
+  startTimeEntry(timeEntry: TimeEntry): void {
+    this.timeEntryService.startTimeTracking(timeEntry.taskId);
+    this.snackBar.open('Time entry started', 'Close', { duration: 3000 });
+  }
+
+  stopTimeEntry(timeEntry: TimeEntry): void {
+    const stopTracking$ = this.timeEntryService.stopTimeTracking();
+    if (stopTracking$) {
+      stopTracking$.subscribe({
+        next: () => {
+          this.snackBar.open('Time entry stopped', 'Close', { duration: 3000 });
+          this.refreshRequest.emit();
+        },
+        error: error => {
+          console.error('Error stopping time entry', error);
+          this.snackBar.open('Error stopping time entry', 'Close', { duration: 3000 });
+        }
+      });
+    } else {
+      this.snackBar.open('No active time entry to stop', 'Close', { duration: 3000 });
+    }
+  }
+}

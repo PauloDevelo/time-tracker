@@ -46,6 +46,22 @@
             (click)="deleteTimeEntry(entry)">
             <mat-icon>delete</mat-icon>
           </button>
+
+          <button 
+            mat-icon-button 
+            color="accent" 
+            matTooltip="Start"
+            (click)="startTimeEntry(entry)">
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+
+          <button 
+            mat-icon-button 
+            color="accent" 
+            matTooltip="Stop"
+            (click)="stopTimeEntry(entry)">
+            <mat-icon>stop</mat-icon>
+          </button>
         </td>
       </ng-container>
       
@@ -53,4 +69,4 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
   </mat-card-content>
-</mat-card> 
+</mat-card>
