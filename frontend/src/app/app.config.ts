@@ -26,6 +26,6 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
-    { provide: CommonModule, useValue: CommonModule } // Add CommonModule to providers
+    { provide: CommonModule, useValue: CommonModule },
   ]
 };
