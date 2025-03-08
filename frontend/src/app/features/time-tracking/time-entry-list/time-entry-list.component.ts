@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { TimeEntryService } from '../../../core/services/time-entry.service';
 import { TimeEntry } from '../../../core/models/time-entry.model';
-import { Task } from '../../../core/models/task.model';
+import { Task, TaskWithProjectName } from '../../../core/models/task.model';
 import { TimeEntryEditDialogComponent } from './time-entry-edit-dialog/time-entry-edit-dialog.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
@@ -33,7 +33,7 @@ import { Subscription } from 'rxjs';
 })
 export class TimeEntryListComponent implements OnInit, OnDestroy {
   @Input() timeEntries: TimeEntry[] | null = [];
-  @Input() tasks: Task[] | null = [];
+  @Input() tasks: TaskWithProjectName[] | null = [];
   @Output() refreshRequest = new EventEmitter<void>();
 
   displayedColumns: string[] = ['task', 'startTime', 'duration', 'actions'];
@@ -61,7 +61,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
   getTaskName(taskId: string): string {
     if (!this.tasks) return '';
     const task = this.tasks.find(t => t._id === taskId);
-    return task ? task.name : '';
+    return task ? `${task.projectName} - ${task.name}` : '';
   }
 
   formatStartTime(isoString: string): string {
