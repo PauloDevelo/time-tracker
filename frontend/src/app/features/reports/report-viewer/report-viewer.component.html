@@ -1,0 +1,134 @@
+<div class="container" *ngIf="report">
+  <div class="report-viewer-container">
+    <div class="header-actions">
+      <button mat-stroked-button (click)="goBack()" class="back-button">
+        <mat-icon>arrow_back</mat-icon> Back to Reports
+      </button>
+      
+      <div class="export-buttons">
+        <span class="export-label">Export as:</span>
+        <button mat-raised-button color="primary" (click)="exportReport('excel')" [disabled]="loading">
+          <mat-icon>description</mat-icon> Excel
+        </button>
+        <button mat-raised-button color="primary" (click)="exportReport('csv')" [disabled]="loading">
+          <mat-icon>insert_drive_file</mat-icon> CSV
+        </button>
+        <button mat-raised-button color="primary" (click)="exportReport('pdf')" [disabled]="loading">
+          <mat-icon>picture_as_pdf</mat-icon> PDF
+        </button>
+      </div>
+    </div>
+    
+    <h1>{{ reportRequest?.reportType === 'invoice' ? 'Invoice Report' : 'Timesheet Report' }}</h1>
+    
+    <div class="loader" *ngIf="loading">
+      <mat-spinner [diameter]="40"></mat-spinner>
+      <span>Exporting report...</span>
+    </div>
+    
+    <!-- Report Summary Card -->
+    <mat-card class="report-summary-card">
+      <mat-card-header>
+        <mat-card-title>Report Summary</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="report-info-grid">
+          <div class="info-column customer-info">
+            <h3>Customer</h3>
+            <p class="info-item"><strong>Name:</strong> {{ report.customerName }}</p>
+            <p class="info-item" *ngIf="report.customerAddress"><strong>Address:</strong> {{ report.customerAddress }}</p>
+          </div>
+          
+          <div class="info-column user-info">
+            <h3>User</h3>
+            <p class="info-item"><strong>Name:</strong> {{ report.userFullName }}</p>
+            <p class="info-item"><strong>Email:</strong> {{ report.userEmail }}</p>
+          </div>
+          
+          <div class="info-column time-info">
+            <h3>Period</h3>
+            <p class="info-item"><strong>Date Range:</strong> {{ getDateRange() }}</p>
+            <p class="info-item"><strong>Total Days:</strong> {{ report.totalDays }}</p>
+            <p class="info-item"><strong>Total Hours:</strong> {{ report.totalHours.toFixed(2) }}</p>
+            <p class="info-item" *ngIf="reportRequest?.reportType === 'invoice'">
+              <strong>Total Cost:</strong> {{ formatCurrency(report.totalCost) }}
+            </p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <!-- Project Data -->
+    <mat-card class="report-data-card">
+      <mat-card-header>
+        <mat-card-title>Project Summary</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="report.projects" class="mat-elevation-z1 full-width">
+          <!-- Project Name Column -->
+          <ng-container matColumnDef="projectName">
+            <th mat-header-cell *matHeaderCellDef>Project</th>
+            <td mat-cell *matCellDef="let project">{{ project.projectName }}</td>
+          </ng-container>
+          
+          <!-- Hours Column -->
+          <ng-container matColumnDef="totalHours">
+            <th mat-header-cell *matHeaderCellDef>Total Hours</th>
+            <td mat-cell *matCellDef="let project">{{ project.totalHours.toFixed(2) }}</td>
+          </ng-container>
+          
+          <!-- Cost Column (only for invoice reports) -->
+          <ng-container matColumnDef="totalCost" *ngIf="reportRequest?.reportType === 'invoice'">
+            <th mat-header-cell *matHeaderCellDef>Total Cost</th>
+            <td mat-cell *matCellDef="let project">{{ formatCurrency(project.totalCost) }}</td>
+          </ng-container>
+          
+          <tr mat-header-row *matHeaderRowDef="projectsDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: projectsDisplayedColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+    
+    <!-- Task Details by Project -->
+    <mat-card *ngFor="let project of report.projects" class="report-data-card">
+      <mat-card-header>
+        <mat-card-title>{{ project.projectName }} - Tasks</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="project.tasks" class="mat-elevation-z1 full-width">
+          <!-- Task Name Column -->
+          <ng-container matColumnDef="taskName">
+            <th mat-header-cell *matHeaderCellDef>Task</th>
+            <td mat-cell *matCellDef="let task">{{ task.taskName }}</td>
+          </ng-container>
+          
+          <!-- Hours Column -->
+          <ng-container matColumnDef="totalHours">
+            <th mat-header-cell *matHeaderCellDef>Total Hours</th>
+            <td mat-cell *matCellDef="let task">{{ task.totalHours.toFixed(2) }}</td>
+          </ng-container>
+          
+          <!-- Cost Column (only for invoice reports) -->
+          <ng-container matColumnDef="totalCost" *ngIf="reportRequest?.reportType === 'invoice'">
+            <th mat-header-cell *matHeaderCellDef>Total Cost</th>
+            <td mat-cell *matCellDef="let task">{{ formatCurrency(task.totalCost) }}</td>
+          </ng-container>
+          
+          <tr mat-header-row *matHeaderRowDef="tasksDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: tasksDisplayedColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+    
+    <div class="generation-info">
+      Report generated on {{ report.generationDate | date:'medium' }}
+    </div>
+  </div>
+</div>
+
+<div class="no-report-container" *ngIf="!report">
+  <p>No report data found. Please generate a report first.</p>
+  <button mat-flat-button color="primary" (click)="goBack()">
+    Go to Report Generator
+  </button>
+</div> 

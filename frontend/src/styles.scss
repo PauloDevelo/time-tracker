@@ -59,6 +59,10 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px #2d2d2d inset !important;
   }
 
+  h1 {
+    color: #bbbaba !important;
+  }
+
   h2 {
     color: #e0e0e0 !important;
   }
@@ -122,13 +126,20 @@ input:-webkit-autofill:active {
   .mat-mdc-table {
     background-color: #1e1e1e;
   }
-  
-  .mat-mdc-row, .mat-mdc-header-row {
+
+  .mat-mdc-row, .mat-mdc-cell {
+    color: #e0e0e0;
     background-color: #1e1e1e;
   }
+
+  .mat-mdc-header-row {
+    background-color: #424242 !important; // Adjust this color to your preferred dark mode brightness
+    color: #ffffff; // Ensures text is readable in dark mode
+  }
   
-  .mat-mdc-header-cell, .mat-mdc-cell {
+  .mat-mdc-header-cell, .mat-mdc-header-row {
     color: #e0e0e0;
+    background-color: #1e1e1e;
   }
 
   .mdc-button__label {

@@ -1,0 +1,59 @@
+.report-generator-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1 {
+  margin-bottom: 2rem;
+  color: #333;
+  text-align: center;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.report-type-container {
+  margin-bottom: 1.5rem;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.report-type-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.button-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.error-message {
+  color: #f44336;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+}
+
+.no-data-message {
+  color: #f57c00;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background-color: rgba(245, 124, 0, 0.1);
+  border-radius: 4px;
+}
+
+mat-card {
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+} 
