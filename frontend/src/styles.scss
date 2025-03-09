@@ -59,6 +59,10 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px #2d2d2d inset !important;
   }
 
+  ::placeholder {
+    color: #666565 !important; /* Change this to your desired color */
+  }
+
   h1 {
     color: #bbbaba !important;
   }

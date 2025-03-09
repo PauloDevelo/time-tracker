@@ -39,6 +39,17 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'settings',
+    loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./features/settings/user-profile/user-profile.component').then(m => m.UserProfileComponent),
+    canActivate: [authGuard],
+    title: 'Profile - Time Tracker'
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }
