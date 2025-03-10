@@ -65,6 +65,15 @@ export class ProjectListComponent implements OnInit {
     }
   }
 
+  isExpanded(customerId: string): boolean {
+    const expandedState = localStorage.getItem(`customer-${customerId}-expanded`);
+    return expandedState === 'true';
+  }
+
+  setExpanded(customerId: string, expanded: boolean): void {
+    localStorage.setItem(`customer-${customerId}-expanded`, expanded.toString());
+  }
+
   deleteProject(projectId: string, event: Event): void {
     event.preventDefault();
     event.stopPropagation();

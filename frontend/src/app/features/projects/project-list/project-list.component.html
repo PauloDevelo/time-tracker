@@ -26,7 +26,7 @@
 
     <div *ngIf="projectsByCustomer.length > 0" class="projects-by-customer">
       <mat-accordion>
-        <mat-expansion-panel *ngFor="let customerGroup of projectsByCustomer" [expanded]="true">
+        <mat-expansion-panel *ngFor="let customerGroup of projectsByCustomer" [expanded]="isExpanded(customerGroup.customer._id)" (opened)="setExpanded(customerGroup.customer._id, true)" (closed)="setExpanded(customerGroup.customer._id, false)">
           <mat-expansion-panel-header>
             <mat-panel-title>
               <span class="customer-name">{{ customerGroup.customer.name }}</span>
@@ -58,4 +58,4 @@
       </mat-accordion>
     </div>
   </div>
-</div> 
+</div>
