@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -38,10 +38,11 @@ export class ProjectListComponent implements OnInit {
   constructor(
     private projectService: ProjectService,
     private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef,
   ) {}
 
-  ngOnInit(): void {
-    this.loadProjects();
+  async ngOnInit(): Promise<void> {
+    await this.loadProjects();
   }
 
   async loadProjects(): Promise<void> {
@@ -51,19 +52,18 @@ export class ProjectListComponent implements OnInit {
     try {
       this.projectsByCustomer = await lastValueFrom(this.projectService.getProjectsByCustomer());
       this.loading = false;
+      this.cdr.detectChanges();
     }
     catch (err) {
       console.error('Error loading projects', err);
         this.error = true;
         this.loading = false;
+        this.cdr.detectChanges();
         this.snackBar.open('Failed to load projects. Please try again.', 'Close', {
           duration: 5000
         });
     }
   }
-
-
-    
 
   deleteProject(projectId: string, event: Event): void {
     event.preventDefault();
