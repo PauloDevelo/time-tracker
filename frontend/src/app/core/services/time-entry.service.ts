@@ -35,6 +35,40 @@ export class TimeEntryService {
       .pipe(map(response => response.timeEntries));
   }
 
+  // Get most recent time entries for projects
+  getRecentTaskActivity(forTheLastPastDays: number = 30): Observable<{ taskId: string, lastActivity: Date }[]> {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - forTheLastPastDays);
+
+    return this.http.get<{ timeEntries: TimeEntry[] }>(
+      `${this.apiUrl}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&limit=1000`
+    ).pipe(
+      map(response => {
+        const timeEntries = response.timeEntries || [];
+        
+        const taskActivityMap = new Map<string, Date>();
+        
+        timeEntries.forEach(entry => {
+          const taskId = entry.taskId;
+          const entryDate = new Date(entry.startTime);
+          
+          if (taskId) {
+            const currentLastActivity = taskActivityMap.get(taskId);
+            if (!currentLastActivity || entryDate > currentLastActivity) {
+              taskActivityMap.set(taskId, entryDate);
+            }
+          }
+        });
+        
+        return Array.from(taskActivityMap).map(([taskId, lastActivity]) => ({
+          taskId,
+          lastActivity
+        }));
+      })
+    );
+  }
+
   // Update a time entry
   updateTimeEntry(id: string, timeEntry: TimeEntryUpdateRequest): Observable<TimeEntry> {
     return this.http.put<TimeEntry>(`${this.apiUrl}/${id}`, timeEntry);
@@ -139,4 +173,4 @@ export class TimeEntryService {
       this.activeTimeTrackingSubject.next(null);
     }
   }
-} 
+}

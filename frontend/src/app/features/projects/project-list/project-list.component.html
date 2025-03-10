@@ -34,25 +34,87 @@
             </mat-panel-title>
           </mat-expansion-panel-header>
 
-          <div class="projects-grid">
-            <mat-card *ngFor="let project of customerGroup.projects" class="project-card" [routerLink]="['/projects', project._id]">
-              <mat-card-header>
-                <mat-card-title>{{ project.name }}</mat-card-title>
-              </mat-card-header>
-              
-              <mat-card-content>
-                <p *ngIf="project.description" class="description">{{ project.description }}</p>
-              </mat-card-content>
-              
-              <mat-card-actions>
-                <button mat-button [routerLink]="['/projects', project._id, 'edit']" (click)="$event.stopPropagation()">
-                  <mat-icon>edit</mat-icon> Edit
+          <!-- Display projects with recent activity first (limited to 9) -->
+          <div class="projects-section" *ngIf="customerGroup.activeProjects.length > 0">
+            <h3 class="section-title">Recently Active Projects ({{ customerGroup.activeProjects.length }})</h3>
+            <div class="projects-grid">
+              <mat-card *ngFor="let project of customerGroup.activeProjects" class="project-card" [routerLink]="['/projects', project._id]">
+                <mat-card-header>
+                  <mat-card-title>{{ project.name }}</mat-card-title>
+                  <mat-card-subtitle *ngIf="project.lastActivity" class="activity-indicator">
+                    <mat-icon>schedule</mat-icon>
+                    <span>{{ formatLastActivity(project.lastActivity) }}</span>
+                  </mat-card-subtitle>
+                </mat-card-header>
+                
+                <mat-card-content>
+                  <p *ngIf="project.description" class="description">{{ project.description }}</p>
+                </mat-card-content>
+                
+                <mat-card-actions>
+                  <button mat-button [routerLink]="['/projects', project._id, 'edit']" (click)="$event.stopPropagation()">
+                    <mat-icon>edit</mat-icon> Edit
+                  </button>
+                  <button mat-button color="warn" (click)="deleteProject(project._id, $event)">
+                    <mat-icon>delete</mat-icon> Delete
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </div>
+
+          <!-- Display other projects toggle button (if there are any) -->
+          <div class="other-projects-section" *ngIf="customerGroup.otherProjects.length > 0">
+            <div class="toggle-header" (click)="toggleOtherProjects(customerGroup.customer._id)">
+              <h3 class="section-title" *ngIf="customerGroup.activeProjects.length > 0">
+                Other Projects ({{ customerGroup.otherProjects.length }})
+                <button mat-icon-button class="toggle-button">
+                  <mat-icon>{{ isOtherProjectsExpanded(customerGroup.customer._id) ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
-                <button mat-button color="warn" (click)="deleteProject(project._id, $event)">
-                  <mat-icon>delete</mat-icon> Delete
+              </h3>
+              <h3 class="section-title" *ngIf="customerGroup.activeProjects.length === 0">
+                All Projects ({{ customerGroup.otherProjects.length }})
+                <button mat-icon-button class="toggle-button">
+                  <mat-icon>{{ isOtherProjectsExpanded(customerGroup.customer._id) ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
-              </mat-card-actions>
-            </mat-card>
+              </h3>
+            </div>
+            
+            <!-- Collapsible content for other projects -->
+            <div class="collapsible-content" [class.expanded]="isOtherProjectsExpanded(customerGroup.customer._id)">
+              <div class="projects-grid" *ngIf="isOtherProjectsExpanded(customerGroup.customer._id)">
+                <mat-card *ngFor="let project of customerGroup.otherProjects" class="project-card" [routerLink]="['/projects', project._id]">
+                  <mat-card-header>
+                    <mat-card-title>{{ project.name }}</mat-card-title>
+                    <mat-card-subtitle *ngIf="project.lastActivity" class="activity-indicator">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ formatLastActivity(project.lastActivity) }}</span>
+                    </mat-card-subtitle>
+                  </mat-card-header>
+                  
+                  <mat-card-content>
+                    <p *ngIf="project.description" class="description">{{ project.description }}</p>
+                  </mat-card-content>
+                  
+                  <mat-card-actions>
+                    <button mat-button [routerLink]="['/projects', project._id, 'edit']" (click)="$event.stopPropagation()">
+                      <mat-icon>edit</mat-icon> Edit
+                    </button>
+                    <button mat-button color="warn" (click)="deleteProject(project._id, $event)">
+                      <mat-icon>delete</mat-icon> Delete
+                    </button>
+                  </mat-card-actions>
+                </mat-card>
+              </div>
+            </div>
+          </div>
+
+          <!-- Display message if no projects -->
+          <div *ngIf="customerGroup.projects.length === 0" class="empty-customer-projects">
+            <p>No projects for this customer. Add a new project to get started.</p>
+            <button mat-raised-button color="primary" [routerLink]="['/projects/create']">
+              <mat-icon>add</mat-icon> Create Project
+            </button>
           </div>
         </mat-expansion-panel>
       </mat-accordion>
