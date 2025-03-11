@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule, MatSelect } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-import { Subject, startWith, takeUntil } from 'rxjs';
+import { Subject, interval, startWith, takeUntil } from 'rxjs';
 
 import { TimeEntryService } from '../../../core/services/time-entry.service';
 import { Task, TaskWithProjectName } from '../../../core/models/task.model';
@@ -39,10 +39,9 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
     return !!this.activeTracking?.startProgressTime;
   }
 
-  get elapsedTime(): number {
-    return this.timeEntryService.getActiveTrackingDuration();
-  }
-
+  // Changed from getter to a regular property
+  elapsedTime: number = 0;
+  
   taskControl = new FormControl<string>('');
   searchControl = new FormControl<string>('');
   activeTracking: ActiveTimeTracking | null = null;
@@ -53,6 +52,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   highlightedIndex = -1;
   
   private destroy$ = new Subject<void>();
+  private timerSubscription = new Subject<void>();
 
   constructor(private timeEntryService: TimeEntryService) {}
 
@@ -66,10 +66,12 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
           this.taskControl.setValue(tracking.taskId);
           this.taskControl.disable();
           this.updateSelectedTask(tracking.taskId);
+          this.startTimer();
         } else {
           this.taskControl.setValue('');
           this.taskControl.enable();
           this.selectedTask = null;
+          this.stopTimer();
         }
       });
     
@@ -108,6 +110,11 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
           this.selectedTask = null;
         }
       });
+      
+    // Initialize the timer if there's active tracking
+    if (this.isTracking) {
+      this.startTimer();
+    }
   }
 
   ngOnChanges(): void {
@@ -120,6 +127,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopTimer();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -213,6 +221,33 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
         optionElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }, 0);
+  }
+  
+  /**
+   * Updates elapsedTime property every second instead of on every change detection
+   */
+  private startTimer(): void {
+    this.stopTimer();
+    
+    // Initial update of elapsed time
+    this.elapsedTime = this.timeEntryService.getActiveTrackingDuration();
+    
+    // Then update every second
+    this.timerSubscription = new Subject<void>();
+    interval(1000)
+      .pipe(takeUntil(this.timerSubscription))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.elapsedTime = this.timeEntryService.getActiveTrackingDuration();
+      });
+  }
+  
+  /**
+   * Stops the timer that updates the elapsed time
+   */
+  private stopTimer(): void {
+    this.timerSubscription.next();
+    this.timerSubscription.complete();
   }
   
   private updateSelectedTask(taskId: string): void {
