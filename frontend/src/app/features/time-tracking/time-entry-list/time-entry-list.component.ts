@@ -36,7 +36,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
   @Input() tasks: TaskWithProjectName[] | null = [];
   @Output() refreshRequest = new EventEmitter<void>();
 
-  displayedColumns: string[] = ['task', 'startTime', 'duration', 'actions'];
+  displayedColumns: string[] = ['task', 'duration', 'actions'];
   activeTimeTracking: ActiveTimeTracking | null = null;
   private subscription: Subscription = new Subscription();
 
@@ -62,11 +62,6 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
     if (!this.tasks) return '';
     const task = this.tasks.find(t => t._id === taskId);
     return task ? `${task.projectName} - ${task.name}` : '';
-  }
-
-  formatStartTime(isoString: string): string {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   formatDuration(hours: number): string {

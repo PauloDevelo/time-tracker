@@ -14,13 +14,7 @@
         <th mat-header-cell *matHeaderCellDef>Task</th>
         <td mat-cell *matCellDef="let entry">{{ getTaskName(entry.taskId) }}</td>
       </ng-container>
-      
-      <!-- Start Time Column -->
-      <ng-container matColumnDef="startTime">
-        <th mat-header-cell *matHeaderCellDef>Start Time</th>
-        <td mat-cell *matCellDef="let entry">{{ formatStartTime(entry.startTime) }}</td>
-      </ng-container>
-      
+
       <!-- Duration Column -->
       <ng-container matColumnDef="duration">
         <th mat-header-cell *matHeaderCellDef>Duration</th>
