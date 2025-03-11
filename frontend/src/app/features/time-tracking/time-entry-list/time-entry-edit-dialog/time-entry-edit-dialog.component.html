@@ -16,27 +16,36 @@
       </mat-form-field>
     </div>
 
-    <div class="form-row">
-      <mat-form-field appearance="fill">
+    <div class="form-row date-time-container">
+      <mat-form-field appearance="fill" class="date-field">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="startDate">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="editForm.get('startDate')?.hasError('required')">
+          Start date is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="time-field">
         <mat-label>Start Time</mat-label>
         <input matInput type="time" formControlName="startTime">
         <mat-error *ngIf="editForm.get('startTime')?.hasError('required')">
           Start time is required
         </mat-error>
       </mat-form-field>
+    </div>
       
+    <div class="form-row">
       <mat-form-field appearance="fill">
-        <mat-label>Duration (hours)</mat-label>
-        <input matInput type="number" step="0.25" min="0.01" max="24" formControlName="totalDurationInHour">
-        <mat-hint>Enter time in decimal hours (e.g., 1.5 for 1 hour and 30 minutes)</mat-hint>
-        <mat-error *ngIf="editForm.get('totalDurationInHour')?.hasError('required')">
+        <mat-label>Duration (HH:MM)</mat-label>
+        <input matInput formControlName="duration" placeholder="HH:MM">
+        <mat-hint>Format as hours:minutes (e.g., 01:30 for 1 hour and 30 minutes)</mat-hint>
+        <mat-error *ngIf="editForm.get('duration')?.hasError('required')">
           Duration is required
         </mat-error>
-        <mat-error *ngIf="editForm.get('totalDurationInHour')?.hasError('min')">
-          Duration must be greater than 0
-        </mat-error>
-        <mat-error *ngIf="editForm.get('totalDurationInHour')?.hasError('max')">
-          Duration must be less than or equal to 24 hours
+        <mat-error *ngIf="editForm.get('duration')?.hasError('pattern')">
+          Please enter a valid time format (HH:MM)
         </mat-error>
       </mat-form-field>
     </div>
@@ -47,4 +56,4 @@
     <button mat-raised-button color="primary" type="submit" [disabled]="editForm.invalid">Save</button>
     <button mat-raised-button color="warn" type="button" (click)="onDelete()">Delete</button>
   </mat-dialog-actions>
-</form> 
+</form>

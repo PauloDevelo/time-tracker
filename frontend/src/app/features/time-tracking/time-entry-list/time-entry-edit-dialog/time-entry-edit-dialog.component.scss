@@ -9,6 +9,19 @@ mat-form-field {
   width: 100%;
 }
 
+.date-time-container {
+  display: flex;
+  gap: 15px;
+  
+  .date-field {
+    flex: 3;
+  }
+  
+  .time-field {
+    flex: 2;
+  }
+}
+
 @media (min-width: 768px) {
   .form-row {
     flex-direction: row;
@@ -17,4 +30,8 @@ mat-form-field {
       flex: 1;
     }
   }
-} 
+  
+  .date-time-container {
+    align-items: center;
+  }
+}

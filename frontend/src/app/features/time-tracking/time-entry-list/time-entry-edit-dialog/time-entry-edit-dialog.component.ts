@@ -7,6 +7,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 import { TimeEntryService } from '../../../../core/services/time-entry.service';
 import { Task } from '../../../../core/models/task.model';
@@ -28,7 +30,9 @@ interface DialogData {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './time-entry-edit-dialog.component.html',
   styleUrls: ['./time-entry-edit-dialog.component.scss']
@@ -53,15 +57,21 @@ export class TimeEntryEditDialogComponent implements OnInit {
     const timeEntry = this.data.timeEntry;
     const startTime = new Date(timeEntry.startTime);
     
-    // Format time as HH:MM for the input
+    // Format time for the time input (HH:MM)
     const hours = startTime.getHours().toString().padStart(2, '0');
     const minutes = startTime.getMinutes().toString().padStart(2, '0');
     const timeString = `${hours}:${minutes}`;
+    
+    // Convert duration from hours to HH:MM format
+    const durationHours = Math.floor(timeEntry.totalDurationInHour);
+    const durationMinutes = Math.round((timeEntry.totalDurationInHour - durationHours) * 60);
+    const durationString = `${durationHours.toString().padStart(2, '0')}:${durationMinutes.toString().padStart(2, '0')}`;
 
     this.editForm = this.fb.group({
       taskId: [timeEntry.taskId, Validators.required],
-      startTime: [timeString, Validators.required],
-      totalDurationInHour: [timeEntry.totalDurationInHour, [Validators.required, Validators.min(0.01), Validators.max(24)]]
+      startDate: [startTime, Validators.required],
+      startTime: [timeString, [Validators.required, Validators.pattern('^([01]?[0-9]|2[0-3]):[0-5][0-9]$')]],
+      duration: [durationString, [Validators.required, Validators.pattern('^([01]?[0-9]|2[0-3]):[0-5][0-9]$')]]
     });
   }
 
@@ -73,16 +83,23 @@ export class TimeEntryEditDialogComponent implements OnInit {
     const formValues = this.editForm.value;
     const timeEntry = this.data.timeEntry;
     
-    // Parse the time string and create a new date with the same date but updated time
+    // Combine date and time inputs
+    const startDate = formValues.startDate;
     const [hours, minutes] = formValues.startTime.split(':').map(Number);
-    const startDate = new Date(timeEntry.startTime);
-    startDate.setHours(hours, minutes, 0, 0);
+    
+    // Create a new date with the selected date and time
+    const combinedDateTime = new Date(startDate);
+    combinedDateTime.setHours(hours, minutes, 0, 0);
+    
+    // Parse the duration string (HH:MM) to decimal hours
+    const [durationHours, durationMinutes] = formValues.duration.split(':').map(Number);
+    const totalDurationInHour = durationHours + (durationMinutes / 60);
     
     const updateRequest: TimeEntryUpdateRequest = {
       _id: timeEntry._id,
       taskId: formValues.taskId,
-      startTime: startDate.toISOString(),
-      totalDurationInHour: parseFloat(formValues.totalDurationInHour)
+      startTime: combinedDateTime.toISOString(),
+      totalDurationInHour: parseFloat(totalDurationInHour.toFixed(2))
     };
 
     this.timeEntryService.updateTimeEntry(timeEntry._id, updateRequest).subscribe({
@@ -127,4 +144,4 @@ export class TimeEntryEditDialogComponent implements OnInit {
       }
     });
   }
-} 
+}
