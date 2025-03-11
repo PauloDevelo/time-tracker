@@ -12,7 +12,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Observable, Subject, interval, takeUntil } from 'rxjs';
+import { Observable, Subject, interval, map, takeUntil } from 'rxjs';
 
 import { TimeEntryService } from '../../core/services/time-entry.service';
 import { TaskService } from '../../core/services/task.service';
@@ -51,6 +51,7 @@ export class TimeTrackingComponent implements OnInit, OnDestroy {
   selectedDate: Date = new Date();
   isTracking = false;
   elapsedTime = 0;
+  totalDuration$!: Observable<number>;
   
   private destroy$ = new Subject<void>();
 
@@ -95,6 +96,12 @@ export class TimeTrackingComponent implements OnInit, OnDestroy {
 
   loadTimeEntries(): void {
     this.timeEntries$ = this.timeEntryService.getTimeEntriesByDate(this.selectedDate);
+    this.totalDuration$ = this.timeEntries$.pipe(
+      map(entries => {
+        // Calculate total duration in hours
+        return entries.reduce((total, entry) => total + entry.totalDurationInHour, 0);
+      })
+    );
   }
 
   refreshTimeEntries(): void {
@@ -105,6 +112,14 @@ export class TimeTrackingComponent implements OnInit, OnDestroy {
     const newDate = new Date(this.selectedDate);
     newDate.setDate(newDate.getDate() + days);
     this.onDateChange(newDate);
+  }
+
+  formatDuration(hours: number): string {
+    const totalMinutes = Math.round(hours * 60);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    
+    return `${h}h ${m}m`;
   }
 
   private startTimer(): void {

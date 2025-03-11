@@ -18,6 +18,45 @@
   .date-selector {
     min-width: 200px;
   }
+
+  .date-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .date-display {
+      text-align: center;
+      margin-bottom: 8px;
+      
+      .weekday {
+        font-size: 18px;
+        font-weight: 500;
+      }
+      
+      .full-date {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6);
+      }
+    }
+    
+    .total-duration {
+      text-align: center;
+      padding: 4px 12px;
+      background-color: #f0f7ff;
+      border-radius: 16px;
+      
+      .label {
+        font-size: 14px;
+        font-weight: 500;
+        margin-right: 8px;
+      }
+      
+      .value {
+        font-size: 16px;
+        font-weight: 600;
+      }
+    }
+  }
 }
 
 /* Responsive adjustments */
@@ -30,8 +69,13 @@
       margin-bottom: 15px;
     }
     
+    .date-summary {
+      margin: 15px 0;
+      align-items: flex-start;
+    }
+    
     .date-selector {
       width: 100%;
     }
   }
-} 
+}

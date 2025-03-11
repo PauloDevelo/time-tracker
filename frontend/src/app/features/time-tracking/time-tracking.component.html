@@ -1,6 +1,16 @@
 <div class="container">
   <div class="time-tracking-header">
     <h1>Time Tracking</h1>
+    <div class="date-summary">
+      <div class="date-display">
+        <div class="weekday">{{ selectedDate | date:'EEEE' }}</div>
+        <div class="full-date">{{ selectedDate | date:'longDate' }}</div>
+      </div>
+      <div class="total-duration">
+        <span class="label">Total:</span>
+        <span class="value" *ngIf="(totalDuration$ | async) as totalDuration">{{ formatDuration(totalDuration) }}</span>
+      </div>
+    </div>
     <div class="date-selector">
       <button mat-icon-button (click)="changeDate(-1)">
         <mat-icon>chevron_left</mat-icon>
