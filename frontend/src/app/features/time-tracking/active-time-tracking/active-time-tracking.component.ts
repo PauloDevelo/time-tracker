@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule, MatSelect } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-import { Subject, combineLatest, map, startWith, takeUntil } from 'rxjs';
+import { Subject, startWith, takeUntil } from 'rxjs';
 
 import { TimeEntryService } from '../../../core/services/time-entry.service';
 import { Task, TaskWithProjectName } from '../../../core/models/task.model';
@@ -30,6 +30,7 @@ import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
   styleUrls: ['./active-time-tracking.component.scss']
 })
 export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
+  @Input() selectedDate: Date = new Date();
   @Input() tasks: TaskWithProjectName[] | null = [];
   @Output() refreshRequest = new EventEmitter<void>();
   @ViewChild('taskSelect') taskSelect!: MatSelect;
@@ -136,7 +137,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   startTracking(): void {
     const taskId = this.taskControl.value;
     if (taskId) {
-      this.timeEntryService.startTimeTracking(taskId);
+      this.timeEntryService.startTimeTracking(taskId, this.selectedDate);
     }
   }
 

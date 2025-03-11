@@ -80,14 +80,13 @@ export class TimeEntryService {
   }
 
   // Start time tracking for a task
-  async startTimeTracking(taskId: string): Promise<void> {
+  async startTimeTracking(taskId: string, startDate: Date = new Date()): Promise<void> {
     if (this.activeTimeTrackingSubject.value) {
       await this.stopTimeTracking();
     }
 
-    var currentTime = new Date();
     var entry = await lastValueFrom(this.createTimeEntry({ 
-      startTime: currentTime.toISOString(),
+      startTime: startDate.toISOString(),
       totalDurationInHour: 0,
       taskId
     }));

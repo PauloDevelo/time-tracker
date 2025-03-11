@@ -19,6 +19,7 @@
 
   <!-- Active Time Tracking Component -->
   <app-active-time-tracking 
+    [selectedDate]="selectedDate"
     [tasks]="tasks$ | async" 
     (refreshRequest)="refreshTimeEntries()">
   </app-active-time-tracking>

@@ -41,9 +41,6 @@
       
       <div class="timer-display" *ngIf="isTracking">
         <div class="timer">{{ formatElapsedTime(elapsedTime) }}</div>
-        <div class="task-name">
-          <span *ngIf="activeTracking">Task: {{ getTaskName(activeTracking.taskId) }}</span>
-        </div>
       </div>
     </div>
   </mat-card-content>
