@@ -19,6 +19,28 @@ export const components = {
                   currency: { type: 'string' },
                   paymentTerms: { type: 'string' }
                 }
+              },
+              azureDevOps: {
+                type: 'object',
+                properties: {
+                  organizationUrl: { 
+                    type: 'string', 
+                    format: 'uri',
+                    description: 'Azure DevOps organization URL (e.g., https://dev.azure.com/myorg)',
+                    example: 'https://dev.azure.com/myorg'
+                  },
+                  pat: { 
+                    type: 'string', 
+                    writeOnly: true,
+                    description: 'Personal Access Token (write-only, never returned in responses)'
+                  },
+                  enabled: { 
+                    type: 'boolean',
+                    default: false,
+                    description: 'Enable Azure DevOps integration for this customer'
+                  }
+                },
+                description: 'Azure DevOps integration configuration'
               }
             }
         },

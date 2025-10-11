@@ -91,6 +91,15 @@ const customerSchema = new Schema<ICustomer>(
   },
   {
     timestamps: true,
+    toJSON: {
+      transform: function(_doc, ret) {
+        // Remove PAT from JSON responses for security
+        if (ret.azureDevOps?.pat) {
+          delete ret.azureDevOps.pat;
+        }
+        return ret;
+      }
+    }
   }
 );
 
