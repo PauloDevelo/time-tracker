@@ -34,10 +34,85 @@
   margin-right: 8px;
 }
 
+// Azure DevOps section styles
+.azure-devops-enable {
+  margin-bottom: 16px;
+}
+
+.azure-devops-fields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.azure-devops-help {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background-color: rgba(33, 150, 243, 0.08);
+  border-radius: 4px;
+  margin-top: 16px;
+  
+  mat-icon {
+    color: #2196f3;
+    flex-shrink: 0;
+  }
+  
+  .help-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    
+    strong {
+      color: rgba(0, 0, 0, 0.87);
+    }
+    
+    ol {
+      margin: 8px 0;
+      padding-left: 20px;
+      
+      li {
+        margin: 4px 0;
+      }
+    }
+    
+    a {
+      color: #2196f3;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+mat-expansion-panel-header {
+  mat-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .form-row {
     flex-direction: column;
     gap: 0;
   }
-} 
+  
+  .azure-devops-help {
+    flex-direction: column;
+    
+    .help-text {
+      font-size: 13px;
+    }
+  }
+}

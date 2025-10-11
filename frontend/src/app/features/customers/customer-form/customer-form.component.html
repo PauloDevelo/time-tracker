@@ -67,6 +67,67 @@
     </mat-form-field>
   </div>
   
+  <div class="form-section">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>cloud</mat-icon>
+          <span>Azure DevOps Integration</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          Configure Azure DevOps connection for work item synchronization
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <div formGroupName="azureDevOps">
+        <div class="azure-devops-enable">
+          <mat-checkbox formControlName="enabled" (change)="toggleAzureDevOps()">
+            Enable Azure DevOps Integration
+          </mat-checkbox>
+        </div>
+        
+        <div *ngIf="isAzureDevOpsEnabled" class="azure-devops-fields">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Organization URL</mat-label>
+            <input matInput formControlName="organizationUrl" placeholder="https://dev.azure.com/yourorg">
+            <mat-icon matSuffix>link</mat-icon>
+            <mat-hint>Format: https://dev.azure.com/yourorg or https://yourorg.visualstudio.com</mat-hint>
+            <mat-error *ngIf="submitted && azureDevOps.get('organizationUrl')?.errors">
+              <span *ngIf="azureDevOps.get('organizationUrl')?.errors?.['required']">Organization URL is required when Azure DevOps is enabled</span>
+              <span *ngIf="azureDevOps.get('organizationUrl')?.errors?.['pattern']">Please enter a valid Azure DevOps URL</span>
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Personal Access Token (PAT)</mat-label>
+            <input matInput formControlName="pat" type="password" placeholder="Enter your Azure DevOps PAT">
+            <mat-icon matSuffix>vpn_key</mat-icon>
+            <mat-hint>PAT is encrypted and stored securely. It will not be displayed after saving.</mat-hint>
+            <mat-error *ngIf="submitted && azureDevOps.get('pat')?.errors?.['required']">
+              Personal Access Token is required when Azure DevOps is enabled
+            </mat-error>
+          </mat-form-field>
+          
+          <div class="azure-devops-help">
+            <mat-icon>info</mat-icon>
+            <div class="help-text">
+              <strong>How to generate a PAT:</strong>
+              <ol>
+                <li>Go to Azure DevOps → User Settings → Personal Access Tokens</li>
+                <li>Click "New Token"</li>
+                <li>Required scopes: <strong>Work Items (Read)</strong>, <strong>Project and Team (Read)</strong></li>
+                <li>Copy the token and paste it above</li>
+              </ol>
+              <a href="https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate" target="_blank" rel="noopener noreferrer">
+                Learn more about Azure DevOps PATs
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </div>
+  
   <div class="form-actions">
     <button type="button" mat-button (click)="onCancel()">
       Cancel

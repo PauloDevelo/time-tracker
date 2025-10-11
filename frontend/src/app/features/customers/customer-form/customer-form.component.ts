@@ -8,6 +8,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { Customer, CustomerCreateRequest } from '../../../core/models/customer.model';
 
@@ -23,7 +25,9 @@ import { Customer, CustomerCreateRequest } from '../../../core/models/customer.m
     MatCardModule,
     MatSelectModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatCheckboxModule,
+    MatExpansionModule
   ],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.scss']
@@ -66,6 +70,11 @@ export class CustomerFormComponent implements OnInit, OnChanges {
         dailyRate: [0, [Validators.required, Validators.min(0)]],
         currency: ['USD', Validators.required],
         paymentTerms: ['']
+      }),
+      azureDevOps: this.fb.group({
+        organizationUrl: ['', [Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)]],
+        pat: [''],
+        enabled: [false]
       })
     });
   }
@@ -83,8 +92,16 @@ export class CustomerFormComponent implements OnInit, OnChanges {
           dailyRate: this.customer.billingDetails.dailyRate,
           currency: this.customer.billingDetails.currency,
           paymentTerms: this.customer.billingDetails.paymentTerms
+        },
+        azureDevOps: {
+          organizationUrl: this.customer.azureDevOps?.organizationUrl || '',
+          pat: '', // Never pre-fill PAT for security
+          enabled: this.customer.azureDevOps?.enabled || false
         }
       });
+      
+      // Update validators based on enabled state
+      this.updateAzureDevOpsValidators();
     }
   }
   
@@ -95,11 +112,45 @@ export class CustomerFormComponent implements OnInit, OnChanges {
       return;
     }
     
-    this.formSubmit.emit(this.customerForm.value);
+    const formValue = this.customerForm.value;
+    
+    // Remove azureDevOps if not enabled or if fields are empty
+    if (!formValue.azureDevOps?.enabled || !formValue.azureDevOps?.organizationUrl) {
+      delete formValue.azureDevOps;
+    }
+    
+    this.formSubmit.emit(formValue);
   }
   
   onCancel(): void {
     this.cancel.emit();
+  }
+  
+  toggleAzureDevOps(): void {
+    this.updateAzureDevOpsValidators();
+  }
+  
+  private updateAzureDevOpsValidators(): void {
+    const azureDevOpsGroup = this.azureDevOps;
+    const enabled = azureDevOpsGroup.get('enabled')?.value;
+    const organizationUrlControl = azureDevOpsGroup.get('organizationUrl');
+    const patControl = azureDevOpsGroup.get('pat');
+    
+    if (enabled) {
+      organizationUrlControl?.setValidators([
+        Validators.required,
+        Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)
+      ]);
+      patControl?.setValidators([Validators.required]);
+    } else {
+      organizationUrlControl?.setValidators([
+        Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)
+      ]);
+      patControl?.clearValidators();
+    }
+    
+    organizationUrlControl?.updateValueAndValidity();
+    patControl?.updateValueAndValidity();
   }
   
   // Helper methods for template
@@ -114,4 +165,12 @@ export class CustomerFormComponent implements OnInit, OnChanges {
   get billingDetails() { 
     return this.customerForm.get('billingDetails') as FormGroup; 
   }
-} 
+  
+  get azureDevOps() { 
+    return this.customerForm.get('azureDevOps') as FormGroup; 
+  }
+  
+  get isAzureDevOpsEnabled(): boolean {
+    return this.azureDevOps.get('enabled')?.value || false;
+  }
+}

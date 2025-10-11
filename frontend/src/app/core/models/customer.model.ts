@@ -11,6 +11,11 @@ export interface Customer {
     currency: string;
     paymentTerms?: string;
   };
+  azureDevOps?: {
+    organizationUrl: string;
+    pat: string;
+    enabled: boolean;
+  };
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +32,11 @@ export interface CustomerCreateRequest {
     dailyRate: number;
     currency: string;
     paymentTerms?: string;
+  };
+  azureDevOps?: {
+    organizationUrl: string;
+    pat: string;
+    enabled: boolean;
   };
 }
 
