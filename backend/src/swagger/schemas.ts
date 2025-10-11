@@ -66,7 +66,34 @@ export const components = {
                 name: { type: 'string', required: true },
                 description: { type: 'string' },
                 url: { type: 'string', format: 'url' },
-                customerId: { type: 'string', format: 'uuid' }
+                customerId: { type: 'string', format: 'uuid' },
+                azureDevOps: {
+                  type: 'object',
+                  properties: {
+                    projectName: {
+                      type: 'string',
+                      description: 'Azure DevOps project name',
+                      example: 'MyAzureDevOpsProject'
+                    },
+                    projectId: {
+                      type: 'string',
+                      format: 'uuid',
+                      description: 'Azure DevOps project GUID (populated after validation)',
+                      example: '6ce954b1-ce1f-45d1-b94d-e6bf2464ba2c'
+                    },
+                    enabled: {
+                      type: 'boolean',
+                      default: false,
+                      description: 'Enable Azure DevOps sync for this project'
+                    },
+                    lastSyncedAt: {
+                      type: 'string',
+                      format: 'date-time',
+                      description: 'Timestamp of last work item import'
+                    }
+                  },
+                  description: 'Azure DevOps project metadata'
+                }
             }
         },
         Task: {

@@ -6,7 +6,7 @@ Status legend: [ ] todo, [~] in-progress, [x] done
 
 ## Tasks
 - [x] 01 — Extend Customer model with Azure DevOps configuration → `01-extend-customer-model-with-azure-devops-config.md`
-- [ ] 02 — Extend Project model with Azure DevOps metadata → `02-extend-project-model-with-azure-devops-metadata.md`
+- [x] 02 — Extend Project model with Azure DevOps metadata → `02-extend-project-model-with-azure-devops-metadata.md`
 - [ ] 03 — Extend Task model with Azure DevOps work item mapping → `03-extend-task-model-with-azure-devops-work-item-mapping.md`
 - [ ] 04 — Create Azure DevOps API client service → `04-create-azure-devops-client-service.md`
 - [ ] 05 — Implement Azure DevOps project validation endpoint → `05-implement-azure-devops-project-validation-endpoint.md`
