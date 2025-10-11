@@ -6,6 +6,12 @@ export interface Project {
     _id: string;
     name: string;
   };
+  azureDevOps?: {
+    projectName: string;
+    projectId: string;
+    enabled: boolean;
+    lastSyncedAt?: string;
+  };
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -15,6 +21,11 @@ export interface ProjectCreateRequest {
   name: string;
   description?: string;
   customerId: string;
+  azureDevOps?: {
+    projectName: string;
+    projectId: string;
+    enabled: boolean;
+  };
 }
 
 export interface ProjectUpdateRequest extends ProjectCreateRequest {

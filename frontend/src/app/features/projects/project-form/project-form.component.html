@@ -28,7 +28,7 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Customer</mat-label>
-          <mat-select formControlName="customerId">
+          <mat-select formControlName="customerId" (selectionChange)="onCustomerChange($event.value)">
             <mat-option *ngFor="let customer of customers" [value]="customer._id">
               {{ customer.name }}
             </mat-option>
@@ -37,6 +37,92 @@
             Customer is required
           </mat-error>
         </mat-form-field>
+      </div>
+
+      <!-- Azure DevOps Integration Section -->
+      <div *ngIf="customerHasAzureDevOps" class="form-section azure-devops-section">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>cloud</mat-icon>
+              <span>Azure DevOps Integration</span>
+            </mat-panel-title>
+            <mat-panel-description>
+              Link this project to Azure DevOps for work item synchronization
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formGroupName="azureDevOps">
+            <div class="azure-devops-enable">
+              <mat-checkbox formControlName="enabled" (change)="toggleAzureDevOps()">
+                Link to Azure DevOps Project
+              </mat-checkbox>
+              <p class="help-text" *ngIf="isAzureDevOpsEnabled">
+                <mat-icon>info</mat-icon>
+                <span>Work items can be imported from Azure DevOps iterations once the project is validated.</span>
+              </p>
+            </div>
+
+            <div *ngIf="isAzureDevOpsEnabled" class="azure-devops-fields">
+              <div class="project-name-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Azure DevOps Project Name</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="projectName" 
+                    placeholder="Enter Azure DevOps project name"
+                    (input)="onAzureDevOpsProjectNameChange($any($event.target).value)">
+                  <mat-icon matSuffix *ngIf="!validatingAzureDevOps && azureDevOpsValidationResult?.valid" class="success-icon">check_circle</mat-icon>
+                  <mat-spinner matSuffix *ngIf="validatingAzureDevOps" diameter="20"></mat-spinner>
+                  <mat-hint *ngIf="!azureDevOpsValidationResult">Enter the exact project name from Azure DevOps</mat-hint>
+                  <mat-error *ngIf="projectForm.get('azureDevOps')?.hasError('notValidated')">
+                    Azure DevOps project must be validated before saving
+                  </mat-error>
+                </mat-form-field>
+                <button 
+                  mat-raised-button 
+                  type="button" 
+                  color="accent"
+                  class="validate-button"
+                  [disabled]="!azureDevOpsProjectName || validatingAzureDevOps || !project"
+                  (click)="validateAzureDevOpsProject()">
+                  <mat-icon>verified</mat-icon>
+                  Validate
+                </button>
+              </div>
+
+              <!-- Validation Result Messages -->
+              <div *ngIf="azureDevOpsValidationResult" class="validation-result">
+                <div *ngIf="azureDevOpsValidationResult.valid" class="validation-success">
+                  <mat-icon>check_circle</mat-icon>
+                  <div class="message">
+                    <strong>Project validated successfully!</strong>
+                    <p>Azure DevOps Project: {{ azureDevOpsValidationResult.projectName }}</p>
+                    <p class="project-url" *ngIf="azureDevOpsValidationResult.projectUrl">
+                      <a [href]="azureDevOpsValidationResult.projectUrl" target="_blank" rel="noopener noreferrer">
+                        View in Azure DevOps <mat-icon>open_in_new</mat-icon>
+                      </a>
+                    </p>
+                  </div>
+                </div>
+
+                <div *ngIf="!azureDevOpsValidationResult.valid" class="validation-error">
+                  <mat-icon>error</mat-icon>
+                  <div class="message">
+                    <strong>Validation failed</strong>
+                    <p>{{ azureDevOpsValidationResult.error }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Note for new projects -->
+              <div *ngIf="!project" class="info-message">
+                <mat-icon>info</mat-icon>
+                <span>Note: Azure DevOps validation is only available after the project is created. Save the project first, then edit it to link to Azure DevOps.</span>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
       </div>
     </mat-card-content>
 

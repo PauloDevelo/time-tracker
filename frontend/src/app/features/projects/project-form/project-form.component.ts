@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,8 +7,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { Project, ProjectCreateRequest } from '../../../core/models/project.model';
 import { Customer } from '../../../core/models/customer.model';
+import { ProjectService, AzureDevOpsValidationResponse } from '../../../core/services/project.service';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-project-form',
@@ -21,12 +27,16 @@ import { Customer } from '../../../core/models/customer.model';
     MatSelectModule,
     MatDatepickerModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    MatCheckboxModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatExpansionModule
   ],
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss']
 })
-export class ProjectFormComponent implements OnInit {
+export class ProjectFormComponent implements OnInit, OnChanges {
   @Input() project: Project | null = null;
   @Input() customers: Customer[] = [];
   @Input() loading = false;
@@ -35,11 +45,32 @@ export class ProjectFormComponent implements OnInit {
   @Output() cancel = new EventEmitter<void>();
 
   projectForm!: FormGroup;
+  customerHasAzureDevOps = false;
+  validatingAzureDevOps = false;
+  azureDevOpsValidationResult: AzureDevOpsValidationResponse | null = null;
+  
+  private destroy$ = new Subject<void>();
+  private projectNameChange$ = new Subject<string>();
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private projectService: ProjectService
+  ) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.setupAzureDevOpsValidation();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['project'] && this.projectForm) {
+      this.initForm();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   initForm(): void {
@@ -47,10 +78,51 @@ export class ProjectFormComponent implements OnInit {
       name: [this.project?.name || '', [Validators.required, Validators.maxLength(100)]],
       description: [this.project?.description || ''],
       customerId: [this.project?.customerId._id || '', [Validators.required]],
+      azureDevOps: this.fb.group({
+        projectName: [this.project?.azureDevOps?.projectName || ''],
+        projectId: [this.project?.azureDevOps?.projectId || ''],
+        enabled: [this.project?.azureDevOps?.enabled || false]
+      })
     });
+
+    // Check if customer has Azure DevOps when form is initialized
+    if (this.project?.customerId._id) {
+      this.checkCustomerAzureDevOps(this.project.customerId._id);
+    }
+
+    // If editing existing project with Azure DevOps, mark as validated
+    if (this.project?.azureDevOps?.enabled && this.project?.azureDevOps?.projectId) {
+      this.azureDevOpsValidationResult = {
+        valid: true,
+        projectId: this.project.azureDevOps.projectId,
+        projectName: this.project.azureDevOps.projectName
+      };
+    }
+  }
+
+  setupAzureDevOpsValidation(): void {
+    // Debounced validation on project name change
+    this.projectNameChange$
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(projectName => {
+        if (projectName && this.isAzureDevOpsEnabled && this.project?._id) {
+          this.validateAzureDevOpsProject();
+        }
+      });
   }
 
   onSubmit(): void {
+    // Validate Azure DevOps if enabled
+    if (this.isAzureDevOpsEnabled && !this.azureDevOpsValidationResult?.valid) {
+      this.projectForm.get('azureDevOps')?.setErrors({ notValidated: true });
+      this.projectForm.markAllAsTouched();
+      return;
+    }
+
     if (this.projectForm.valid) {
       const formValue = this.projectForm.value;
       
@@ -60,6 +132,11 @@ export class ProjectFormComponent implements OnInit {
         startDate: formValue.startDate ? formValue.startDate.toISOString() : undefined,
         endDate: formValue.endDate ? formValue.endDate.toISOString() : undefined
       };
+
+      // Remove azureDevOps if not enabled or not validated
+      if (!formValue.azureDevOps?.enabled || !this.azureDevOpsValidationResult?.valid) {
+        delete projectData.azureDevOps;
+      }
       
       this.formSubmit.emit(projectData);
     } else {
@@ -70,4 +147,78 @@ export class ProjectFormComponent implements OnInit {
   onCancel(): void {
     this.cancel.emit();
   }
-} 
+
+  onCustomerChange(customerId: string): void {
+    this.checkCustomerAzureDevOps(customerId);
+    // Reset Azure DevOps validation when customer changes
+    this.azureDevOpsValidationResult = null;
+    this.projectForm.get('azureDevOps')?.patchValue({
+      projectName: '',
+      projectId: '',
+      enabled: false
+    });
+  }
+
+  checkCustomerAzureDevOps(customerId: string): void {
+    const customer = this.customers.find(c => c._id === customerId);
+    this.customerHasAzureDevOps = !!(customer?.azureDevOps?.enabled);
+  }
+
+  toggleAzureDevOps(): void {
+    const enabled = this.isAzureDevOpsEnabled;
+    if (!enabled) {
+      // Reset validation when disabled
+      this.azureDevOpsValidationResult = null;
+      this.projectForm.get('azureDevOps')?.patchValue({
+        projectName: '',
+        projectId: ''
+      });
+    }
+  }
+
+  onAzureDevOpsProjectNameChange(projectName: string): void {
+    // Reset validation result when project name changes
+    this.azureDevOpsValidationResult = null;
+    this.projectNameChange$.next(projectName);
+  }
+
+  validateAzureDevOpsProject(): void {
+    const projectName = this.projectForm.get('azureDevOps.projectName')?.value;
+    
+    if (!projectName || !this.project?._id) {
+      return;
+    }
+
+    this.validatingAzureDevOps = true;
+    this.azureDevOpsValidationResult = null;
+
+    this.projectService.validateAzureDevOpsProject(this.project._id, projectName)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          this.validatingAzureDevOps = false;
+          this.azureDevOpsValidationResult = result;
+          
+          if (result.valid && result.projectId) {
+            // Populate projectId automatically
+            this.projectForm.get('azureDevOps.projectId')?.setValue(result.projectId);
+          }
+        },
+        error: (error) => {
+          this.validatingAzureDevOps = false;
+          this.azureDevOpsValidationResult = {
+            valid: false,
+            error: error.error?.error || 'Failed to validate Azure DevOps project'
+          };
+        }
+      });
+  }
+
+  get isAzureDevOpsEnabled(): boolean {
+    return this.projectForm.get('azureDevOps.enabled')?.value || false;
+  }
+
+  get azureDevOpsProjectName(): string {
+    return this.projectForm.get('azureDevOps.projectName')?.value || '';
+  }
+}
