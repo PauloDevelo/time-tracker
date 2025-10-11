@@ -10,8 +10,8 @@ Status legend: [ ] todo, [~] in-progress, [x] done
 - [x] 03 — Extend Task model with Azure DevOps work item mapping → `03-extend-task-model-with-azure-devops-work-item-mapping.md`
 - [x] 04 — Create Azure DevOps API client service → `04-create-azure-devops-client-service.md`
 - [x] 05 — Implement Azure DevOps project validation endpoint → `05-implement-azure-devops-project-validation-endpoint.md`
-- [ ] 06 — Implement work item import endpoint for iterations → `06-implement-work-item-import-endpoint.md`
-- [ ] 07 — Create Azure DevOps sync service for work item transformation → `07-create-azure-devops-sync-service.md`
+- [x] 06 — Implement work item import endpoint for iterations → `06-implement-work-item-import-endpoint.md`
+- [x] 07 — Create Azure DevOps sync service for work item transformation → `07-create-azure-devops-sync-service.md`
 - [ ] 08 — Update customer form with Azure DevOps PAT configuration → `08-update-customer-form-with-azure-devops-fields.md`
 - [ ] 09 — Update project form with Azure DevOps project linking → `09-update-project-form-with-azure-devops-fields.md`
 - [ ] 10 — Create work item import UI component for project detail view → `10-create-work-item-import-ui-component.md`

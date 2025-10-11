@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { auth } from '../middleware/auth'; // Assuming you have an auth middleware
-import { createProject, deleteProject, getAllProjects, getProjectById, updateProject, validateAzureDevOpsProject } from '../controllers/project.controller';
+import { createProject, deleteProject, getAllProjects, getProjectById, updateProject, validateAzureDevOpsProject, getAzureDevOpsIterations, importWorkItems } from '../controllers/project.controller';
 import { handleAuth } from './routes.helpers';
 
 const router = Router();
@@ -189,5 +189,115 @@ router.delete('/:id', handleAuth(deleteProject));
  *         description: Azure DevOps service unavailable
  */
 router.post('/:id/validate-azure-devops', handleAuth(validateAzureDevOpsProject));
+
+/**
+ * @swagger
+ * /api/projects/{id}/azure-devops/iterations:
+ *   get:
+ *     summary: Get Azure DevOps iterations for a project
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Project ID
+ *     responses:
+ *       200:
+ *         description: List of iterations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: a589a806-bf11-4d4e-a031-c52ac8d5f7e0
+ *                   name:
+ *                     type: string
+ *                     example: Sprint 1
+ *                   path:
+ *                     type: string
+ *                     example: MyProject\\Sprint 1
+ *                   startDate:
+ *                     type: string
+ *                     format: date-time
+ *                   finishDate:
+ *                     type: string
+ *                     format: date-time
+ *       400:
+ *         description: Azure DevOps not enabled for project
+ *       401:
+ *         description: Unauthorized or invalid Azure DevOps PAT
+ *       404:
+ *         description: Project not found
+ *       503:
+ *         description: Azure DevOps service unavailable
+ */
+router.get('/:id/azure-devops/iterations', handleAuth(getAzureDevOpsIterations));
+
+/**
+ * @swagger
+ * /api/projects/{id}/azure-devops/import-work-items:
+ *   post:
+ *     summary: Import work items from Azure DevOps iteration
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - iterationPath
+ *             properties:
+ *               iterationPath:
+ *                 type: string
+ *                 description: Azure DevOps iteration path
+ *                 example: MyProject\\Sprint 1
+ *     responses:
+ *       200:
+ *         description: Work items imported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 imported:
+ *                   type: integer
+ *                   example: 15
+ *                 skipped:
+ *                   type: integer
+ *                   example: 3
+ *                 tasks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Bad request or Azure DevOps not enabled
+ *       401:
+ *         description: Unauthorized or invalid Azure DevOps PAT
+ *       404:
+ *         description: Project or iteration not found
+ *       429:
+ *         description: Rate limit exceeded
+ *       503:
+ *         description: Azure DevOps service unavailable
+ */
+router.post('/:id/azure-devops/import-work-items', handleAuth(importWorkItems));
 
 export default router;
