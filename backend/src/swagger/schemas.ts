@@ -102,7 +102,51 @@ export const components = {
             name: { type: 'string', required: true },
             description: { type: 'string', required: true },
             url: { type: 'string', format: 'url' },
-            projectId: { type: 'string', format: 'uuid', required: true }
+            projectId: { type: 'string', format: 'uuid', required: true },
+            azureDevOps: {
+              type: 'object',
+              properties: {
+                workItemId: {
+                  type: 'integer',
+                  minimum: 1,
+                  description: 'Azure DevOps work item ID',
+                  example: 123
+                },
+                workItemType: {
+                  type: 'string',
+                  enum: ['Bug', 'Task', 'User Story'],
+                  description: 'Type of Azure DevOps work item',
+                  example: 'Bug'
+                },
+                iterationPath: {
+                  type: 'string',
+                  description: 'Iteration path in Azure DevOps',
+                  example: 'MyProject\\Sprint 1'
+                },
+                assignedTo: {
+                  type: 'string',
+                  description: 'Display name of assigned user',
+                  example: 'John Doe'
+                },
+                lastSyncedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Timestamp of last sync from Azure DevOps'
+                },
+                sourceUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  description: 'Direct link to work item in Azure DevOps',
+                  example: 'https://dev.azure.com/myorg/MyProject/_workitems/edit/123'
+                }
+              },
+              description: 'Azure DevOps work item mapping (present only for imported tasks)'
+            },
+            isAzureDevOpsTask: {
+              type: 'boolean',
+              readOnly: true,
+              description: 'Virtual field indicating if task is imported from Azure DevOps'
+            }
           }
         },
         TimeEntry:{
