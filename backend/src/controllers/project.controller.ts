@@ -1,7 +1,9 @@
 import { Response } from 'express';
 import mongoose from 'mongoose';
 import { Project } from '../models/Project';
+import { Customer } from '../models/Customer';
 import { AuthenticatedRequest } from '../middleware/authenticated-request.model';
+import { AzureDevOpsClient } from '../services/azure-devops-client.service';
 
 
 /**
@@ -165,6 +167,118 @@ export const deleteProject = async (req: AuthenticatedRequest, res: Response): P
     console.error('Error deleting project:', error);
     res.status(500).json({ 
       message: 'Failed to delete project',
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
+ * Validate Azure DevOps project name
+ */
+export const validateAzureDevOpsProject = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { projectName } = req.body;
+    const userId = req.user?._id;
+    
+    // Validate project ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: 'Invalid project ID' });
+      return;
+    }
+    
+    // Validate request body
+    if (!projectName || typeof projectName !== 'string') {
+      res.status(400).json({ message: 'Project name is required' });
+      return;
+    }
+    
+    // Find project and verify ownership
+    const project = await Project.findOne({ _id: id, userId }).populate('customerId');
+    
+    if (!project) {
+      res.status(404).json({ message: 'Project not found' });
+      return;
+    }
+    
+    // Get customer with Azure DevOps configuration
+    const customer = await Customer.findById(project.customerId);
+    
+    if (!customer) {
+      res.status(404).json({ message: 'Customer not found' });
+      return;
+    }
+    
+    // Validate customer has Azure DevOps configured
+    if (!customer.azureDevOps?.enabled) {
+      res.status(400).json({ 
+        valid: false,
+        error: 'Azure DevOps is not enabled for this customer'
+      });
+      return;
+    }
+    
+    if (!customer.azureDevOps.organizationUrl || !customer.azureDevOps.pat) {
+      res.status(400).json({ 
+        valid: false,
+        error: 'Azure DevOps configuration is incomplete for this customer'
+      });
+      return;
+    }
+    
+    // Decrypt PAT
+    const decryptedPAT = customer.getDecryptedPAT();
+    
+    if (!decryptedPAT) {
+      res.status(500).json({ 
+        valid: false,
+        error: 'Failed to decrypt Azure DevOps PAT'
+      });
+      return;
+    }
+    
+    // Create Azure DevOps client and validate project
+    try {
+      const azureDevOpsClient = new AzureDevOpsClient(
+        customer.azureDevOps.organizationUrl,
+        decryptedPAT
+      );
+      
+      const azureProject = await azureDevOpsClient.getProject(projectName);
+      
+      res.status(200).json({
+        valid: true,
+        projectId: azureProject.id,
+        projectName: azureProject.name,
+        projectUrl: azureProject.url
+      });
+    } catch (error) {
+      console.error('Error validating Azure DevOps project:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Determine appropriate status code based on error
+      if (errorMessage.includes('not found')) {
+        res.status(404).json({ 
+          valid: false,
+          error: errorMessage
+        });
+      } else if (errorMessage.includes('authentication failed')) {
+        res.status(401).json({ 
+          valid: false,
+          error: 'Azure DevOps authentication failed. Please check your PAT.'
+        });
+      } else {
+        res.status(503).json({ 
+          valid: false,
+          error: 'Failed to connect to Azure DevOps. Please try again later.'
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error in validateAzureDevOpsProject:', error);
+    res.status(500).json({ 
+      message: 'Internal server error',
       error: error instanceof Error ? error.message : String(error)
     });
   }

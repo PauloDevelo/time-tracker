@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { auth } from '../middleware/auth'; // Assuming you have an auth middleware
-import { createProject, deleteProject, getAllProjects, getProjectById, updateProject } from '../controllers/project.controller';
+import { createProject, deleteProject, getAllProjects, getProjectById, updateProject, validateAzureDevOpsProject } from '../controllers/project.controller';
 import { handleAuth } from './routes.helpers';
 
 const router = Router();
@@ -128,5 +128,66 @@ router.put('/:id', handleAuth(updateProject));
  *         description: Project not found
  */
 router.delete('/:id', handleAuth(deleteProject));
+
+/**
+ * @swagger
+ * /api/projects/{id}/validate-azure-devops:
+ *   post:
+ *     summary: Validate Azure DevOps project name
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - projectName
+ *             properties:
+ *               projectName:
+ *                 type: string
+ *                 description: Azure DevOps project name to validate
+ *                 example: MyAzureDevOpsProject
+ *     responses:
+ *       200:
+ *         description: Validation successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                   example: true
+ *                 projectId:
+ *                   type: string
+ *                   format: uuid
+ *                   example: 6ce954b1-ce1f-45d1-b94d-e6bf2464ba2c
+ *                 projectName:
+ *                   type: string
+ *                   example: MyAzureDevOpsProject
+ *                 projectUrl:
+ *                   type: string
+ *                   format: uri
+ *                   example: https://dev.azure.com/myorg/MyAzureDevOpsProject
+ *       400:
+ *         description: Bad request or Azure DevOps not configured
+ *       401:
+ *         description: Unauthorized or invalid Azure DevOps PAT
+ *       404:
+ *         description: Project not found
+ *       503:
+ *         description: Azure DevOps service unavailable
+ */
+router.post('/:id/validate-azure-devops', handleAuth(validateAzureDevOpsProject));
 
 export default router;
