@@ -12,18 +12,25 @@ import { AzureDevOpsSyncService } from '../services/azure-devops-sync.service';
  */
 export const createProject = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { name, description, url, customerId } = req.body;
+    const { name, description, url, customerId, azureDevOps } = req.body;
     
     // Assuming user ID is available from authentication middleware
     const userId = req.user?._id; 
     
-    const project = new Project({
+    const projectData: any = {
       name,
       description,
       url,
       customerId,
       userId,
-    });
+    };
+    
+    // Include azureDevOps if provided
+    if (azureDevOps) {
+      projectData.azureDevOps = azureDevOps;
+    }
+    
+    const project = new Project(projectData);
 
     const savedProject = await project.save();
     
@@ -111,7 +118,7 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
   try {
     const { id } = req.params;
     const userId = req.user?._id;
-    const { name, description, url, customerId } = req.body;
+    const { name, description, url, customerId, azureDevOps } = req.body;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'Invalid project ID' });
@@ -125,11 +132,19 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
       return;
     }
     
+    // Build update object
+    const updateData: any = { name, description, url, customerId };
+    
+    // Include azureDevOps if provided
+    if (azureDevOps !== undefined) {
+      updateData.azureDevOps = azureDevOps;
+    }
+    
     const updatedProject = await Project.findByIdAndUpdate(
       id,
-      { name, description, url, customerId },
+      updateData,
       { new: true, runValidators: true }
-    );
+    ).populate('customerId', 'name');
     
     res.status(200).json(updatedProject);
   } catch (error) {
@@ -333,6 +348,13 @@ export const getAzureDevOpsIterations = async (req: AuthenticatedRequest, res: R
     
     // Decrypt PAT
     const decryptedPAT = customer.getDecryptedPAT();
+    
+    console.log('Decrypted PAT info:', {
+      hasDecryptedPAT: !!decryptedPAT,
+      patLength: decryptedPAT?.length || 0,
+      organizationUrl: customer.azureDevOps.organizationUrl,
+      encryptedPATPreview: customer.azureDevOps.pat ? `${customer.azureDevOps.pat.substring(0, 10)}...` : 'empty'
+    });
     
     if (!decryptedPAT) {
       res.status(500).json({ 

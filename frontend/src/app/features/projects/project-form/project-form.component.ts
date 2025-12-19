@@ -13,7 +13,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Project, ProjectCreateRequest } from '../../../core/models/project.model';
 import { Customer } from '../../../core/models/customer.model';
-import { ProjectService, AzureDevOpsValidationResponse } from '../../../core/services/project.service';
+import { ProjectService } from '../../../core/services/project.service';
+import { AzureDevOpsService, AzureDevOpsValidationResult } from '../../../core/services/azure-devops.service';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -47,14 +48,15 @@ export class ProjectFormComponent implements OnInit, OnChanges {
   projectForm!: FormGroup;
   customerHasAzureDevOps = false;
   validatingAzureDevOps = false;
-  azureDevOpsValidationResult: AzureDevOpsValidationResponse | null = null;
+  azureDevOpsValidationResult: AzureDevOpsValidationResult | null = null;
   
   private destroy$ = new Subject<void>();
   private projectNameChange$ = new Subject<string>();
 
   constructor(
     private fb: FormBuilder,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private azureDevOpsService: AzureDevOpsService
   ) {}
 
   ngOnInit(): void {
@@ -76,7 +78,7 @@ export class ProjectFormComponent implements OnInit, OnChanges {
   initForm(): void {
     this.projectForm = this.fb.group({
       name: [this.project?.name || '', [Validators.required, Validators.maxLength(100)]],
-      description: [this.project?.description || ''],
+      description: [this.project?.description || '', [Validators.required]],
       customerId: [this.project?.customerId._id || '', [Validators.required]],
       azureDevOps: this.fb.group({
         projectName: [this.project?.azureDevOps?.projectName || ''],
@@ -109,14 +111,15 @@ export class ProjectFormComponent implements OnInit, OnChanges {
         takeUntil(this.destroy$)
       )
       .subscribe(projectName => {
-        if (projectName && this.isAzureDevOpsEnabled && this.project?._id) {
+        const customerId = this.projectForm.get('customerId')?.value;
+        if (projectName && this.isAzureDevOpsEnabled && customerId) {
           this.validateAzureDevOpsProject();
         }
       });
   }
 
   onSubmit(): void {
-    // Validate Azure DevOps if enabled
+    // If Azure DevOps is enabled, validation is required (for both new and existing projects)
     if (this.isAzureDevOpsEnabled && !this.azureDevOpsValidationResult?.valid) {
       this.projectForm.get('azureDevOps')?.setErrors({ notValidated: true });
       this.projectForm.markAllAsTouched();
@@ -184,15 +187,22 @@ export class ProjectFormComponent implements OnInit, OnChanges {
 
   validateAzureDevOpsProject(): void {
     const projectName = this.projectForm.get('azureDevOps.projectName')?.value;
+    const customerId = this.projectForm.get('customerId')?.value;
     
-    if (!projectName || !this.project?._id) {
+    if (!projectName || !customerId) {
       return;
     }
 
     this.validatingAzureDevOps = true;
     this.azureDevOpsValidationResult = null;
 
-    this.projectService.validateAzureDevOpsProject(this.project._id, projectName)
+    // For new projects, use customer-based validation
+    // For existing projects, use project-based validation
+    const validation$ = this.project?._id
+      ? this.azureDevOpsService.validateAzureDevOpsProject(this.project._id, projectName)
+      : this.azureDevOpsService.validateAzureDevOpsProjectByCustomer(customerId, projectName);
+
+    validation$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -208,7 +218,7 @@ export class ProjectFormComponent implements OnInit, OnChanges {
           this.validatingAzureDevOps = false;
           this.azureDevOpsValidationResult = {
             valid: false,
-            error: error.error?.error || 'Failed to validate Azure DevOps project'
+            error: error.message || 'Failed to validate Azure DevOps project'
           };
         }
       });

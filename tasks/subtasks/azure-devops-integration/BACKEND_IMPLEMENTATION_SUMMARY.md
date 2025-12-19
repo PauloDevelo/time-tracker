@@ -373,7 +373,91 @@ http://localhost:3000/api-docs
 
 ---
 
+## Bug Fixes (2025-01-11)
+
+### Issue 1: Customer PAT Encryption Not Working
+**Problem:** When updating customer with Azure DevOps PAT, the PAT was not being encrypted because `findOneAndUpdate` bypasses Mongoose pre-save hooks.
+
+**Fix:** Changed `customer.controller.ts` to use `.findOne()` + `.save()` pattern:
+```typescript
+// Before (broken):
+await Customer.findOneAndUpdate({ _id: id, userId }, updateData);
+
+// After (fixed):
+const customer = await Customer.findOne({ _id: id, userId });
+if (!customer) throw new Error('Customer not found');
+Object.assign(customer, updateData);
+await customer.save(); // Triggers pre-save hook for encryption
+```
+
+**Files Modified:**
+- `backend/src/controllers/customer.controller.ts`
+
+---
+
+### Issue 2: TypeScript Compilation Error in Azure DevOps Client
+**Problem:** Line 153 in `azure-devops-client.service.ts` had type mismatch when passing `this.axiosInstance.defaults.headers` to axios.
+
+**Error:**
+```
+Type 'HeadersDefaults & { [key: string]: AxiosHeaderValue; }' is not assignable to type 'AxiosHeaders | ...'
+```
+
+**Fix:** Extract authorization header and API version explicitly:
+```typescript
+// Before (broken):
+const response = await axios.get(iterationsUrl, {
+  headers: this.axiosInstance.defaults.headers,
+  params: this.axiosInstance.defaults.params
+});
+
+// After (fixed):
+const authHeader = this.axiosInstance.defaults.headers['Authorization'];
+const apiVersion = this.axiosInstance.defaults.params?.['api-version'];
+
+const response = await axios.get(iterationsUrl, {
+  headers: {
+    'Authorization': authHeader,
+    'Content-Type': 'application/json',
+  },
+  params: {
+    'api-version': apiVersion,
+  },
+});
+```
+
+**Files Modified:**
+- `backend/src/services/azure-devops-client.service.ts` (lines 153-165)
+
+---
+
+### Issue 3: Azure DevOps API Domain Compatibility
+**Problem:** User's Azure DevOps uses `visualstudio.com` domain (older) instead of `dev.azure.com`, requiring different API version and URL format.
+
+**Solution Implemented:**
+1. **API Version Detection:** Constructor now detects domain and uses appropriate API version:
+   - `visualstudio.com` → API version `5.0`
+   - `dev.azure.com` → API version `7.1`
+
+2. **Iterations Endpoint Fix:** `getIterations()` now constructs correct URL format:
+   - Old format: `{orgUrl}/_apis/work/{projectId}/{teamId}/teamsettings/iterations`
+   - New format: `{orgUrl}/{projectName}/{teamName}/_apis/work/teamsettings/iterations`
+   - Uses project name and team name instead of IDs
+
+**Working Example:**
+```
+URL: https://suezsmartsolutions.visualstudio.com/Aquadvanced-Energy/Aquadvanced%20Energy/_apis/work/teamsettings/iterations?api-version=5.0
+Project: "Aquadvanced-Energy"
+Team: "Aquadvanced Energy"
+```
+
+**Files Modified:**
+- `backend/src/services/azure-devops-client.service.ts` (constructor and getIterations method)
+
+---
+
 **Backend Implementation Complete! ✅**
 **Date:** 2025-01-11
 **Build Status:** ✅ Successful
 **All 7 backend tasks completed and verified**
+**Bug fixes applied:** 2025-01-11

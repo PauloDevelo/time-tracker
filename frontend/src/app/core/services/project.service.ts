@@ -6,14 +6,6 @@ import { Project, ProjectCreateRequest, ProjectUpdateRequest, ProjectsByCustomer
 import { CustomerService } from './customer.service';
 import { Customer } from '../models/customer.model';
 
-export interface AzureDevOpsValidationResponse {
-  valid: boolean;
-  projectId?: string;
-  projectName?: string;
-  projectUrl?: string;
-  error?: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -85,13 +77,6 @@ export class ProjectService {
           })
         );
       })
-    );
-  }
-
-  validateAzureDevOpsProject(projectId: string, projectName: string): Observable<AzureDevOpsValidationResponse> {
-    return this.http.post<AzureDevOpsValidationResponse>(
-      `${this.apiUrl}/${projectId}/validate-azure-devops`,
-      { projectName }
     );
   }
 }

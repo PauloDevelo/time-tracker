@@ -1,0 +1,92 @@
+<h2 mat-dialog-title>
+  <mat-icon>cloud_download</mat-icon>
+  Import Work Items from Azure DevOps
+</h2>
+
+<mat-dialog-content>
+  <div class="dialog-content">
+    <!-- Project Info -->
+    <div class="project-info">
+      <p><strong>Project:</strong> {{ data.projectName }}</p>
+      <p class="info-text">
+        <mat-icon>info</mat-icon>
+        <span>Only Bug, Task, and User Story work items will be imported</span>
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loadingIterations" class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading iterations...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loadingIterations" class="error-state">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button color="primary" (click)="loadIterations()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+
+    <!-- Iteration Selection -->
+    <div *ngIf="!loadingIterations && !error && iterations.length > 0" class="iteration-selection">
+      <h3>Select Iteration</h3>
+      <mat-radio-group [(ngModel)]="selectedIteration" (change)="onIterationSelect($event.value)">
+        <mat-radio-button *ngFor="let iteration of iterations" [value]="iteration" class="iteration-option">
+          <div class="iteration-details">
+            <div class="iteration-name">
+              {{ iteration.name }}
+              <span *ngIf="isCurrentIteration(iteration)" class="current-badge">Current</span>
+            </div>
+            <div class="iteration-dates">
+              {{ formatDate(iteration.startDate) }} - {{ formatDate(iteration.finishDate) }}
+            </div>
+          </div>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- No Iterations -->
+    <div *ngIf="!loadingIterations && !error && iterations.length === 0" class="no-iterations">
+      <mat-icon>event_busy</mat-icon>
+      <p>No iterations found for this project</p>
+    </div>
+
+    <!-- Importing State -->
+    <div *ngIf="importing" class="importing-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Importing work items from {{ selectedIteration?.name }}...</p>
+    </div>
+
+    <!-- Import Result -->
+    <div *ngIf="importResult && !importing" class="import-result">
+      <div class="result-success">
+        <mat-icon>check_circle</mat-icon>
+        <div class="result-details">
+          <h3>Import Complete!</h3>
+          <p><strong>{{ importResult.imported }}</strong> work items imported</p>
+          <p *ngIf="importResult.skipped > 0">
+            <strong>{{ importResult.skipped }}</strong> work items skipped (already imported)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">
+    {{ importResult ? 'Close' : 'Cancel' }}
+  </button>
+  <button 
+    mat-raised-button 
+    color="primary" 
+    [disabled]="!canImport"
+    (click)="importWorkItems()"
+    *ngIf="!importResult">
+    <mat-icon>download</mat-icon>
+    Import Work Items
+  </button>
+</mat-dialog-actions>

@@ -5,6 +5,14 @@ export interface Task {
   url?: string;
   projectId: string;
   userId: string;
+  azureDevOps?: {
+    workItemId: number;
+    workItemType: 'Bug' | 'Task' | 'User Story';
+    iterationPath: string;
+    assignedTo?: string;
+    lastSyncedAt: string;
+    sourceUrl: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

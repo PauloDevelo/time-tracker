@@ -48,9 +48,21 @@ export class AzureDevOpsClient {
    * @param pat - Personal Access Token (decrypted)
    */
   constructor(organizationUrl: string, pat: string) {
+    console.log('Creating Azure DevOps client:', {
+      organizationUrl,
+      patLength: pat?.length || 0,
+      patPreview: pat ? `${pat.substring(0, 4)}...${pat.substring(pat.length - 4)}` : 'empty'
+    });
 
     // Create base64 encoded auth token (Basic Auth with empty username)
     const authToken = Buffer.from(`:${pat}`).toString('base64');
+
+    // Determine API version based on domain
+    // visualstudio.com uses older API versions
+    const isVisualStudio = organizationUrl.includes('visualstudio.com');
+    const apiVersion = isVisualStudio ? '5.0' : '7.1';
+
+    console.log('Using API version:', apiVersion, 'for domain:', organizationUrl);
 
     // Configure axios instance
     this.axiosInstance = axios.create({
@@ -60,7 +72,7 @@ export class AzureDevOpsClient {
         'Content-Type': 'application/json',
       },
       params: {
-        'api-version': '7.1',
+        'api-version': apiVersion,
       },
     });
   }
@@ -118,22 +130,57 @@ export class AzureDevOpsClient {
    */
   async getIterations(projectId: string): Promise<IAzureDevOpsIteration[]> {
     try {
-      const response = await this.axiosInstance.get(
-        `/work/teamsettings/iterations`,
-        {
-          params: {
-            project: projectId,
-          },
-        }
-      );
-      return response.data.value || [];
+      // First, get the project details to get the project name
+      console.log(`Fetching project details for: ${projectId}`);
+      const projectResponse = await this.axiosInstance.get(`/projects/${projectId}`);
+      const projectName = projectResponse.data.name;
+      console.log(`Project name: ${projectName}`);
+      
+      // Get the default team
+      const defaultTeam = projectResponse.data.defaultTeam;
+      if (!defaultTeam) {
+        throw new Error('No default team found for the project');
+      }
+      console.log(`Using team: ${defaultTeam.name} (${defaultTeam.id})`);
+      
+      // For visualstudio.com, we need to use project name and team name, not IDs
+      // The baseURL already has /_apis, so we need to go back to root
+      const orgUrl = this.axiosInstance.defaults.baseURL?.replace('/_apis', '') || '';
+      const iterationsUrl = `${orgUrl}/${encodeURIComponent(projectName)}/${encodeURIComponent(defaultTeam.name)}/_apis/work/teamsettings/iterations`;
+      
+      console.log('Fetching team iterations from:', iterationsUrl);
+      
+      // Extract authorization header from the instance
+      const authHeader = this.axiosInstance.defaults.headers['Authorization'];
+      const apiVersion = this.axiosInstance.defaults.params?.['api-version'];
+      
+      const response = await axios.get(iterationsUrl, {
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        params: {
+          'api-version': apiVersion,
+        },
+      });
+      
+      const iterations = response.data.value || [];
+      console.log(`Found ${iterations.length} iterations`);
+      return iterations;
     } catch (error) {
       if (this.isAxiosError(error)) {
+        console.error('Azure DevOps API Error:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url,
+          fullUrl: `${error.config?.baseURL || ''}${error.config?.url || ''}`
+        });
         if (error.response?.status === 404) {
           throw new Error(`Azure DevOps project with ID '${projectId}' not found`);
         }
         if (error.response?.status === 401 || error.response?.status === 403) {
-          throw new Error('Azure DevOps authentication failed');
+          throw new Error('Azure DevOps authentication failed. Please ensure your PAT has "Work Items (Read)" scope.');
         }
       }
       throw new Error(`Failed to fetch iterations: ${this.getErrorMessage(error)}`);

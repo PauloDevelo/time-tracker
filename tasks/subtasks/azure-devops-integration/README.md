@@ -14,9 +14,9 @@ Status legend: [ ] todo, [~] in-progress, [x] done
 - [x] 07 — Create Azure DevOps sync service for work item transformation → `07-create-azure-devops-sync-service.md`
 - [x] 08 — Update customer form with Azure DevOps PAT configuration → `08-update-customer-form-with-azure-devops-fields.md`
 - [x] 09 — Update project form with Azure DevOps project linking → `09-update-project-form-with-azure-devops-fields.md`
-- [ ] 10 — Create work item import UI component for project detail view → `10-create-work-item-import-ui-component.md`
-- [ ] 11 — Add Azure DevOps service in frontend → `11-add-azure-devops-service-frontend.md`
-- [ ] 12 — Update project detail view with import functionality → `12-update-project-detail-view-with-import-functionality.md`
+- [x] 10 — Create work item import UI component for project detail view → `10-create-work-item-import-ui-component.md`
+- [x] 11 — Add Azure DevOps service in frontend → `11-add-azure-devops-service-frontend.md`
+- [x] 12 — Update project detail view with import functionality → `12-update-project-detail-view-with-import-functionality.md`
 - [ ] 13 — Add integration tests for Azure DevOps endpoints → `13-add-integration-tests-for-azure-devops-endpoints.md`
 - [ ] 14 — Add unit tests for Azure DevOps services → `14-add-unit-tests-for-azure-devops-services.md`
 
