@@ -12,6 +12,7 @@ export interface IAzureDevOpsIteration {
   id: string;
   name: string;
   path: string;
+  displayName: string; // Formatted name showing parent folder context (e.g., "Team Sprint/Sprint 1")
   attributes: {
     startDate?: string;
     finishDate?: string;
@@ -124,7 +125,9 @@ export class AzureDevOpsClient {
   }
 
   /**
-   * Get all iterations for a project
+   * Get all iterations for a project (from all teams)
+   * Uses the classification nodes endpoint to get ALL iterations defined at project level,
+   * not just iterations assigned to a specific team.
    * @param projectId - Azure DevOps project ID (GUID)
    * @returns Array of iterations
    */
@@ -136,19 +139,12 @@ export class AzureDevOpsClient {
       const projectName = projectResponse.data.name;
       console.log(`Project name: ${projectName}`);
       
-      // Get the default team
-      const defaultTeam = projectResponse.data.defaultTeam;
-      if (!defaultTeam) {
-        throw new Error('No default team found for the project');
-      }
-      console.log(`Using team: ${defaultTeam.name} (${defaultTeam.id})`);
-      
-      // For visualstudio.com, we need to use project name and team name, not IDs
-      // The baseURL already has /_apis, so we need to go back to root
+      // Use classification nodes endpoint to get ALL iterations at project level
+      // This returns iterations from all teams, not just the default team
       const orgUrl = this.axiosInstance.defaults.baseURL?.replace('/_apis', '') || '';
-      const iterationsUrl = `${orgUrl}/${encodeURIComponent(projectName)}/${encodeURIComponent(defaultTeam.name)}/_apis/work/teamsettings/iterations`;
+      const iterationsUrl = `${orgUrl}/${encodeURIComponent(projectName)}/_apis/wit/classificationnodes/iterations`;
       
-      console.log('Fetching team iterations from:', iterationsUrl);
+      console.log('Fetching all project iterations from:', iterationsUrl);
       
       // Extract authorization header from the instance
       const authHeader = this.axiosInstance.defaults.headers['Authorization'];
@@ -161,11 +157,13 @@ export class AzureDevOpsClient {
         },
         params: {
           'api-version': apiVersion,
+          '$depth': 10, // Fetch nested iterations up to 10 levels deep
         },
       });
       
-      const iterations = response.data.value || [];
-      console.log(`Found ${iterations.length} iterations`);
+      // Flatten the hierarchical iteration structure into a flat array
+      const iterations = this.flattenIterations(response.data);
+      console.log(`Found ${iterations.length} iterations (from all teams)`);
       return iterations;
     } catch (error) {
       if (this.isAxiosError(error)) {
@@ -185,6 +183,91 @@ export class AzureDevOpsClient {
       }
       throw new Error(`Failed to fetch iterations: ${this.getErrorMessage(error)}`);
     }
+  }
+
+  /**
+   * Flatten hierarchical iteration nodes into a flat array
+   * @param node - Root iteration node from classification nodes API
+   * @returns Flat array of iterations
+   */
+  private flattenIterations(node: any): IAzureDevOpsIteration[] {
+    const iterations: IAzureDevOpsIteration[] = [];
+    const projectName = node.name; // Root node name is the project name
+    
+    const processNode = (currentNode: any, parentPath: string = '', parentNames: string[] = []): void => {
+      // Build the iteration path
+      const currentPath = parentPath ? `${parentPath}\\${currentNode.name}` : currentNode.name;
+      // Track parent names for display (excluding project name)
+      const currentParentNames = [...parentNames];
+      if (parentPath !== '' && currentNode.name !== projectName) {
+        // Don't add project name to parent names
+      }
+      
+      // Only include leaf nodes or nodes with dates (actual sprints, not just folders)
+      // Skip the root node (which has the project name)
+      if (currentNode.attributes?.startDate || currentNode.attributes?.finishDate || 
+          (!currentNode.children && parentPath !== '')) {
+        // Build display name: show parent folder (team name) + sprint name
+        // e.g., "Pump and Energy Monitoring / Sprint 1"
+        const displayName = this.buildDisplayName(currentPath, projectName);
+        
+        console.log(`Iteration: path="${currentPath}", displayName="${displayName}"`);
+        
+        iterations.push({
+          id: currentNode.identifier || currentNode.id?.toString() || '',
+          name: currentNode.name,
+          path: currentPath,
+          displayName,
+          attributes: {
+            startDate: currentNode.attributes?.startDate,
+            finishDate: currentNode.attributes?.finishDate,
+          },
+        });
+      }
+      
+      // Process children recursively
+      if (currentNode.children && Array.isArray(currentNode.children)) {
+        for (const child of currentNode.children) {
+          processNode(child, currentPath, [...currentParentNames, currentNode.name]);
+        }
+      }
+    };
+    
+    // Start processing from the root node
+    processNode(node, '', []);
+    
+    return iterations;
+  }
+
+  /**
+   * Build a user-friendly display name for an iteration
+   * Removes the project name prefix and formats with forward slashes
+   * @param path - Full iteration path (e.g., "Project\\Team\\Sprint 1")
+   * @param projectName - Project name to remove from path
+   * @returns Formatted display name (e.g., "Team / Sprint 1")
+   */
+  private buildDisplayName(path: string, projectName: string): string {
+    // Handle both backslash and forward slash separators
+    const separator = path.includes('\\') ? '\\' : '/';
+    const parts = path.split(separator);
+    
+    // Remove project name (first part) if it matches
+    if (parts.length > 0 && parts[0] === projectName) {
+      parts.shift();
+    }
+    
+    // If no parts remain or empty, return the original path
+    if (parts.length === 0) {
+      return path;
+    }
+    
+    // If only one part remains, return it as-is (sprint directly under project)
+    if (parts.length === 1) {
+      return parts[0];
+    }
+    
+    // Join remaining parts with forward slash for better readability
+    return parts.join(' / ');
   }
 
   /**

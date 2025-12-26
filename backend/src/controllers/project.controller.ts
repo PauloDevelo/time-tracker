@@ -377,6 +377,7 @@ export const getAzureDevOpsIterations = async (req: AuthenticatedRequest, res: R
         id: iteration.id,
         name: iteration.name,
         path: iteration.path,
+        displayName: iteration.displayName,
         startDate: iteration.attributes.startDate,
         finishDate: iteration.attributes.finishDate,
       }));

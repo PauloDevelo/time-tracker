@@ -17,6 +17,7 @@ export interface Iteration {
   id: string;
   name: string;
   path: string;
+  displayName: string; // Formatted name showing parent folder context (e.g., "Team Sprint / Sprint 1")
   startDate?: string;
   finishDate?: string;
 }
@@ -58,7 +59,7 @@ export class AzureDevOpsService {
     return this.http.get<Iteration[]>(
       `${this.apiUrl}/${projectId}/azure-devops/iterations`
     ).pipe(
-      map(iterations => this.sortIterationsByDate(iterations)),
+      map(iterations => this.sortIterationsAlphabetically(iterations)),
       catchError(this.handleError)
     );
   }
@@ -72,11 +73,11 @@ export class AzureDevOpsService {
     );
   }
 
-  private sortIterationsByDate(iterations: Iteration[]): Iteration[] {
+  private sortIterationsAlphabetically(iterations: Iteration[]): Iteration[] {
     return iterations.sort((a, b) => {
-      const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
-      const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
-      return dateB - dateA; // Most recent first
+      const nameA = (a.displayName || a.name).toLowerCase();
+      const nameB = (b.displayName || b.name).toLowerCase();
+      return nameA.localeCompare(nameB);
     });
   }
 

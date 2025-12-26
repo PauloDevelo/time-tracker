@@ -37,7 +37,7 @@
         <mat-radio-button *ngFor="let iteration of iterations" [value]="iteration" class="iteration-option">
           <div class="iteration-details">
             <div class="iteration-name">
-              {{ iteration.name }}
+              {{ iteration.displayName || iteration.name }}
               <span *ngIf="isCurrentIteration(iteration)" class="current-badge">Current</span>
             </div>
             <div class="iteration-dates">
@@ -57,7 +57,7 @@
     <!-- Importing State -->
     <div *ngIf="importing" class="importing-state">
       <mat-spinner diameter="40"></mat-spinner>
-      <p>Importing work items from {{ selectedIteration?.name }}...</p>
+      <p>Importing work items from {{ selectedIteration?.displayName || selectedIteration?.name }}...</p>
     </div>
 
     <!-- Import Result -->
