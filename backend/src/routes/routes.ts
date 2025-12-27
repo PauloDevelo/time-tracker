@@ -15,7 +15,7 @@ export const initializeRoutes = (app: Express) => {
         res.json({ message: 'Welcome to Time Tracking API' });
     });
 
-    app.use('/auth', authRoutes);
+    app.use('/api/auth', authRoutes);
     app.use('/api/customers', customerRoutes);
     app.use('/api', contractRoutes);
     app.use('/api/projects', projectRoutes);
