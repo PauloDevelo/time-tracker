@@ -16,7 +16,6 @@ BACKEND_DIR="$APP_DIR/backend"
 FRONTEND_DIR="$APP_DIR/frontend"
 NGINX_WEBROOT="/var/www/timetracker"
 BACKUP_DIR="/opt/time-tracker-backups"
-SOURCE_DIR="$(pwd)"  # Save the checkout/source directory
 
 # Ensure common paths are in PATH (for GitHub Actions runner environment)
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
@@ -98,7 +97,7 @@ sudo chown -R $(whoami):$(whoami) "$APP_DIR"
 
 # Copy backend files
 mkdir -p "$BACKEND_DIR"
-cp -r "$SOURCE_DIR/backend/"* "$BACKEND_DIR/"
+cp -r backend/* "$BACKEND_DIR/"
 
 # Install dependencies (including dev dependencies for TypeScript build)
 cd "$BACKEND_DIR"
@@ -143,7 +142,7 @@ log_info "Deploying frontend..."
 
 # Create frontend build directory
 mkdir -p "$FRONTEND_DIR"
-cp -r "$SOURCE_DIR/frontend/"* "$FRONTEND_DIR/"
+cp -r frontend/* "$FRONTEND_DIR/"
 
 # Install dependencies
 cd "$FRONTEND_DIR"
