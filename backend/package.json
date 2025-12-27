@@ -1,6 +1,6 @@
 {
   "name": "time-tracking-backend",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Backend for Time Tracking Application",
   "main": "dist/server.js",
   "scripts": {
