@@ -140,6 +140,19 @@ jobs:
           fetch-depth: 0
           # Use deploy key to bypass branch protection rules when pushing version bump
           ssh-key: ${{ secrets.DEPLOY_KEY }}
+          persist-credentials: true
+
+      - name: Verify SSH is configured
+        run: |
+          echo "Remote URL:"
+          git remote -v
+          echo "Checking if SSH key is available..."
+          if [ -n "${{ secrets.DEPLOY_KEY }}" ]; then
+            echo "✅ DEPLOY_KEY secret is set"
+          else
+            echo "❌ DEPLOY_KEY secret is NOT set"
+            exit 1
+          fi
 
       - name: Configure Git
         run: |
