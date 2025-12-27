@@ -408,6 +408,47 @@ export const getAzureDevOpsIterations = async (req: AuthenticatedRequest, res: R
 }
 
 /**
+ * Get distinct Azure DevOps project names for the current user
+ */
+export const getAzureDevOpsProjectNames = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+    const { customerId } = req.query;
+    
+    // Build filter conditions
+    const filter: any = {
+      userId,
+      'azureDevOps.projectName': { $exists: true, $ne: '' }
+    };
+    
+    // Optionally filter by customer
+    if (customerId) {
+      if (!mongoose.Types.ObjectId.isValid(customerId as string)) {
+        res.status(400).json({ message: 'Invalid customer ID' });
+        return;
+      }
+      filter.customerId = customerId;
+    }
+    
+    // Get distinct project names sorted alphabetically
+    const projectNames = await Project.distinct('azureDevOps.projectName', filter);
+    
+    // Sort alphabetically (case-insensitive)
+    const sortedProjectNames = projectNames
+      .filter((name): name is string => typeof name === 'string' && name.length > 0)
+      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    res.status(200).json({ projectNames: sortedProjectNames });
+  } catch (error) {
+    console.error('Error fetching Azure DevOps project names:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch Azure DevOps project names',
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+};
+
+/**
  * Import work items from Azure DevOps iteration
  */
 export const importWorkItems = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

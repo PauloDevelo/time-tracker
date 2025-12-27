@@ -11,11 +11,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Project, ProjectCreateRequest } from '../../../core/models/project.model';
 import { Customer } from '../../../core/models/customer.model';
 import { ProjectService } from '../../../core/services/project.service';
 import { AzureDevOpsService, AzureDevOpsValidationResult } from '../../../core/services/azure-devops.service';
-import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, Observable, of, startWith, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-project-form',
@@ -32,7 +33,8 @@ import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
     MatCheckboxModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatAutocompleteModule
   ],
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss']
@@ -49,6 +51,8 @@ export class ProjectFormComponent implements OnInit, OnChanges {
   customerHasAzureDevOps = false;
   validatingAzureDevOps = false;
   azureDevOpsValidationResult: AzureDevOpsValidationResult | null = null;
+  azureDevOpsProjectSuggestions: string[] = [];
+  filteredProjectSuggestions$: Observable<string[]> = of([]);
   
   private destroy$ = new Subject<void>();
   private projectNameChange$ = new Subject<string>();
@@ -62,6 +66,7 @@ export class ProjectFormComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.initForm();
     this.setupAzureDevOpsValidation();
+    this.setupFilteredProjectSuggestions();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -90,6 +95,8 @@ export class ProjectFormComponent implements OnInit, OnChanges {
     // Check if customer has Azure DevOps when form is initialized
     if (this.project?.customerId._id) {
       this.checkCustomerAzureDevOps(this.project.customerId._id);
+      // Load Azure DevOps project suggestions for the customer
+      this.loadAzureDevOpsProjectSuggestions(this.project.customerId._id);
     }
 
     // If editing existing project with Azure DevOps, mark as validated
@@ -114,6 +121,41 @@ export class ProjectFormComponent implements OnInit, OnChanges {
         const customerId = this.projectForm.get('customerId')?.value;
         if (projectName && this.isAzureDevOpsEnabled && customerId) {
           this.validateAzureDevOpsProject();
+        }
+      });
+  }
+
+  setupFilteredProjectSuggestions(): void {
+    const projectNameControl = this.projectForm.get('azureDevOps.projectName');
+    if (projectNameControl) {
+      this.filteredProjectSuggestions$ = projectNameControl.valueChanges.pipe(
+        startWith(projectNameControl.value || ''),
+        map(value => this.filterProjectSuggestions(value || ''))
+      );
+    }
+  }
+
+  private filterProjectSuggestions(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.azureDevOpsProjectSuggestions.filter(
+      suggestion => suggestion.toLowerCase().includes(filterValue)
+    );
+  }
+
+  loadAzureDevOpsProjectSuggestions(customerId: string): void {
+    if (!customerId) {
+      this.azureDevOpsProjectSuggestions = [];
+      return;
+    }
+
+    this.projectService.getAzureDevOpsProjectNames(customerId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (projectNames) => {
+          this.azureDevOpsProjectSuggestions = projectNames;
+        },
+        error: () => {
+          this.azureDevOpsProjectSuggestions = [];
         }
       });
   }
@@ -160,6 +202,8 @@ export class ProjectFormComponent implements OnInit, OnChanges {
       projectId: '',
       enabled: false
     });
+    // Load Azure DevOps project suggestions for the new customer
+    this.loadAzureDevOpsProjectSuggestions(customerId);
   }
 
   checkCustomerAzureDevOps(customerId: string): void {
@@ -183,6 +227,12 @@ export class ProjectFormComponent implements OnInit, OnChanges {
     // Reset validation result when project name changes
     this.azureDevOpsValidationResult = null;
     this.projectNameChange$.next(projectName);
+  }
+
+  onAzureDevOpsProjectSelected(projectName: string): void {
+    // When a suggestion is selected, trigger validation immediately
+    this.azureDevOpsValidationResult = null;
+    this.validateAzureDevOpsProject();
   }
 
   validateAzureDevOpsProject(): void {

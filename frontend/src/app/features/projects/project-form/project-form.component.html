@@ -71,6 +71,7 @@
                     matInput 
                     formControlName="projectName" 
                     placeholder="Enter Azure DevOps project name"
+                    [matAutocomplete]="autoAzureProject"
                     (input)="onAzureDevOpsProjectNameChange($any($event.target).value)">
                   <mat-icon matSuffix *ngIf="!validatingAzureDevOps && azureDevOpsValidationResult?.valid" class="success-icon">check_circle</mat-icon>
                   <mat-spinner matSuffix *ngIf="validatingAzureDevOps" diameter="20"></mat-spinner>
@@ -78,6 +79,11 @@
                   <mat-error *ngIf="projectForm.get('azureDevOps')?.hasError('notValidated')">
                     Azure DevOps project must be validated before saving
                   </mat-error>
+                  <mat-autocomplete #autoAzureProject="matAutocomplete" (optionSelected)="onAzureDevOpsProjectSelected($event.option.value)">
+                    <mat-option *ngFor="let suggestion of filteredProjectSuggestions$ | async" [value]="suggestion">
+                      {{ suggestion }}
+                    </mat-option>
+                  </mat-autocomplete>
                 </mat-form-field>
                 <button 
                   mat-raised-button 

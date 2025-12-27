@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { auth } from '../middleware/auth'; // Assuming you have an auth middleware
-import { createProject, deleteProject, getAllProjects, getProjectById, updateProject, validateAzureDevOpsProject, getAzureDevOpsIterations, importWorkItems } from '../controllers/project.controller';
+import { createProject, deleteProject, getAllProjects, getProjectById, updateProject, validateAzureDevOpsProject, getAzureDevOpsIterations, importWorkItems, getAzureDevOpsProjectNames } from '../controllers/project.controller';
 import { handleAuth } from './routes.helpers';
 
 const router = Router();
@@ -50,6 +50,43 @@ router.post('/', handleAuth(createProject));
  *         description: Server error
  */
 router.get('/', handleAuth(getAllProjects));
+
+/**
+ * @swagger
+ * /api/projects/azure-devops-project-names:
+ *   get:
+ *     summary: Get distinct Azure DevOps project names for the current user
+ *     description: Returns a list of unique Azure DevOps project names that have been used by the current user, optionally filtered by customer.
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: customerId
+ *         schema:
+ *           type: string
+ *         description: Optional customer ID to filter project names
+ *     responses:
+ *       200:
+ *         description: List of distinct Azure DevOps project names
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 projectNames:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["MyProject", "AnotherProject", "TeamProject"]
+ *       400:
+ *         description: Invalid customer ID
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/azure-devops-project-names', handleAuth(getAzureDevOpsProjectNames));
 
 /**
  * @swagger
