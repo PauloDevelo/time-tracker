@@ -47,6 +47,15 @@
           </div>
         </div>
 
+        <!-- Billing Override Info -->
+        <div *ngIf="project.billingOverride?.dailyRate !== undefined && project.billingOverride?.dailyRate !== null" class="section billing-override-info">
+          <div class="billing-override-badge">
+            <mat-icon>attach_money</mat-icon>
+            <span>Custom Daily Rate: {{ project.billingOverride!.dailyRate | currency:(project.billingOverride!.currency || 'USD') }}</span>
+          </div>
+          <p class="billing-override-note">This project uses a custom daily rate instead of the customer's default rate.</p>
+        </div>
+
         <mat-divider></mat-divider>
 
         <div class="section">

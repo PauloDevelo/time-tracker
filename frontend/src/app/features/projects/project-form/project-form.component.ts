@@ -89,6 +89,11 @@ export class ProjectFormComponent implements OnInit, OnChanges {
         projectName: [this.project?.azureDevOps?.projectName || ''],
         projectId: [this.project?.azureDevOps?.projectId || ''],
         enabled: [this.project?.azureDevOps?.enabled || false]
+      }),
+      billingOverride: this.fb.group({
+        enabled: [this.project?.billingOverride?.dailyRate !== undefined && this.project?.billingOverride?.dailyRate !== null],
+        dailyRate: [this.project?.billingOverride?.dailyRate || null],
+        currency: [this.project?.billingOverride?.currency || '']
       })
     });
 
@@ -181,6 +186,16 @@ export class ProjectFormComponent implements OnInit, OnChanges {
       // Remove azureDevOps if not enabled or not validated
       if (!formValue.azureDevOps?.enabled || !this.azureDevOpsValidationResult?.valid) {
         delete projectData.azureDevOps;
+      }
+
+      // Handle billing override
+      if (formValue.billingOverride?.enabled && formValue.billingOverride?.dailyRate !== null) {
+        projectData.billingOverride = {
+          dailyRate: formValue.billingOverride.dailyRate,
+          currency: formValue.billingOverride.currency || undefined
+        };
+      } else {
+        delete projectData.billingOverride;
       }
       
       this.formSubmit.emit(projectData);
@@ -280,5 +295,31 @@ export class ProjectFormComponent implements OnInit, OnChanges {
 
   get azureDevOpsProjectName(): string {
     return this.projectForm.get('azureDevOps.projectName')?.value || '';
+  }
+
+  get isBillingOverrideEnabled(): boolean {
+    return this.projectForm.get('billingOverride.enabled')?.value || false;
+  }
+
+  get customerDailyRate(): number | null {
+    const customerId = this.projectForm.get('customerId')?.value;
+    const customer = this.customers.find(c => c._id === customerId);
+    return customer?.billingDetails?.dailyRate ?? null;
+  }
+
+  get customerCurrency(): string {
+    const customerId = this.projectForm.get('customerId')?.value;
+    const customer = this.customers.find(c => c._id === customerId);
+    return customer?.billingDetails?.currency ?? 'USD';
+  }
+
+  toggleBillingOverride(): void {
+    const enabled = this.isBillingOverrideEnabled;
+    if (!enabled) {
+      this.projectForm.get('billingOverride')?.patchValue({
+        dailyRate: null,
+        currency: ''
+      });
+    }
   }
 }

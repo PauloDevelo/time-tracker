@@ -182,6 +182,42 @@ mat-expansion-panel-header {
   }
 }
 
+// Billing Override section styles
+.billing-override-section {
+  margin-top: 16px;
+}
+
+.billing-override-enable {
+  margin-bottom: 16px;
+
+  .help-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0 32px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #2196f3;
+    }
+  }
+}
+
+.billing-override-fields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+  .rate-field {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .project-name-field {
@@ -190,6 +226,12 @@ mat-expansion-panel-header {
     .validate-button {
       width: 100%;
       margin-top: 0;
+    }
+  }
+
+  .billing-override-fields {
+    .rate-field {
+      max-width: 100%;
     }
   }
 }

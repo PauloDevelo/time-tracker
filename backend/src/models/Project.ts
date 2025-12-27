@@ -12,6 +12,10 @@ export interface IProject extends Document {
     enabled: boolean;
     lastSyncedAt?: Date;
   };
+  billingOverride?: {
+    dailyRate?: number;
+    currency?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   isAzureDevOpsEnabled(): boolean;
@@ -67,6 +71,16 @@ const projectSchema = new Schema<IProject>(
       },
       lastSyncedAt: {
         type: Date,
+      },
+    },
+    billingOverride: {
+      dailyRate: {
+        type: Number,
+        min: 0,
+      },
+      currency: {
+        type: String,
+        trim: true,
       },
     },
   },

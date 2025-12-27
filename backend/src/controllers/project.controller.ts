@@ -12,7 +12,7 @@ import { AzureDevOpsSyncService } from '../services/azure-devops-sync.service';
  */
 export const createProject = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { name, description, url, customerId, azureDevOps } = req.body;
+    const { name, description, url, customerId, azureDevOps, billingOverride } = req.body;
     
     // Assuming user ID is available from authentication middleware
     const userId = req.user?._id; 
@@ -28,6 +28,11 @@ export const createProject = async (req: AuthenticatedRequest, res: Response): P
     // Include azureDevOps if provided
     if (azureDevOps) {
       projectData.azureDevOps = azureDevOps;
+    }
+    
+    // Include billingOverride if provided
+    if (billingOverride) {
+      projectData.billingOverride = billingOverride;
     }
     
     const project = new Project(projectData);
@@ -118,7 +123,7 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
   try {
     const { id } = req.params;
     const userId = req.user?._id;
-    const { name, description, url, customerId, azureDevOps } = req.body;
+    const { name, description, url, customerId, azureDevOps, billingOverride } = req.body;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'Invalid project ID' });
@@ -138,6 +143,16 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
     // Include azureDevOps if provided
     if (azureDevOps !== undefined) {
       updateData.azureDevOps = azureDevOps;
+    }
+    
+    // Handle billingOverride - set it if provided, or unset it if explicitly removed
+    if (billingOverride !== undefined) {
+      if (billingOverride === null || Object.keys(billingOverride).length === 0) {
+        // Remove billingOverride if null or empty object
+        updateData.$unset = { billingOverride: 1 };
+      } else {
+        updateData.billingOverride = billingOverride;
+      }
     }
     
     const updatedProject = await Project.findByIdAndUpdate(

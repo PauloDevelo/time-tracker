@@ -111,6 +111,36 @@
   }
 }
 
+/* Billing Override Info */
+.billing-override-info {
+  padding: 16px;
+  background-color: rgba(76, 175, 80, 0.08);
+  border-radius: 4px;
+  border-left: 4px solid #4caf50;
+
+  .billing-override-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4caf50;
+
+    mat-icon {
+      color: #4caf50;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .billing-override-note {
+    margin: 8px 0 0 26px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
 /* Task styles */
 .tasks-section {
   margin-top: 32px;

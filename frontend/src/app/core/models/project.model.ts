@@ -12,6 +12,10 @@ export interface Project {
     enabled: boolean;
     lastSyncedAt?: string;
   };
+  billingOverride?: {
+    dailyRate?: number;
+    currency?: string;
+  };
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -25,6 +29,10 @@ export interface ProjectCreateRequest {
     projectName: string;
     projectId: string;
     enabled: boolean;
+  };
+  billingOverride?: {
+    dailyRate?: number;
+    currency?: string;
   };
 }
 
