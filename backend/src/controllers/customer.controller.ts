@@ -62,8 +62,43 @@ export const updateCustomer = async (req: AuthenticatedRequest, res: Response) =
       return res.status(404).json({ message: 'Customer not found' });
     }
 
-    // Update fields
-    Object.assign(customer, req.body);
+    // Update fields explicitly to ensure Mongoose change detection works
+    const { name, contactInfo, billingDetails, azureDevOps } = req.body;
+    
+    if (name !== undefined) {
+      customer.name = name;
+    }
+    if (contactInfo !== undefined) {
+      customer.contactInfo = { ...customer.contactInfo, ...contactInfo };
+      customer.markModified('contactInfo');
+    }
+    if (billingDetails !== undefined) {
+      customer.billingDetails = { ...customer.billingDetails, ...billingDetails };
+      customer.markModified('billingDetails');
+    }
+    if (azureDevOps !== undefined) {
+      // Only update PAT if a new one is provided (non-empty)
+      if (azureDevOps.pat && azureDevOps.pat.trim() !== '') {
+        // New PAT provided - update everything including PAT
+        customer.azureDevOps = { ...customer.azureDevOps, ...azureDevOps };
+        customer.markModified('azureDevOps');
+      } else if (customer.azureDevOps) {
+        // No new PAT - only update organizationUrl and enabled, preserve existing PAT
+        customer.azureDevOps.organizationUrl = azureDevOps.organizationUrl;
+        customer.azureDevOps.enabled = azureDevOps.enabled;
+        // Mark only the specific fields as modified, not the PAT
+        customer.markModified('azureDevOps.organizationUrl');
+        customer.markModified('azureDevOps.enabled');
+      } else {
+        // No existing azureDevOps - create new without PAT (edge case)
+        customer.azureDevOps = {
+          organizationUrl: azureDevOps.organizationUrl,
+          enabled: azureDevOps.enabled,
+          pat: ''
+        };
+        customer.markModified('azureDevOps');
+      }
+    }
 
     console.log('Before save - PAT info:', {
       patLength: customer.azureDevOps?.pat?.length || 0,

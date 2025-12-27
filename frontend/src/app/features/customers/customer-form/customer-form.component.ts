@@ -136,12 +136,21 @@ export class CustomerFormComponent implements OnInit, OnChanges {
     const organizationUrlControl = azureDevOpsGroup.get('organizationUrl');
     const patControl = azureDevOpsGroup.get('pat');
     
+    // Check if we're editing an existing customer with Azure DevOps already configured
+    const isEditingWithExistingPat = this.customer?.azureDevOps?.enabled;
+    
     if (enabled) {
       organizationUrlControl?.setValidators([
         Validators.required,
         Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)
       ]);
-      patControl?.setValidators([Validators.required]);
+      // PAT is only required for new customers or when enabling Azure DevOps for the first time
+      // When editing, the existing PAT is preserved on the backend if not provided
+      if (!isEditingWithExistingPat) {
+        patControl?.setValidators([Validators.required]);
+      } else {
+        patControl?.clearValidators();
+      }
     } else {
       organizationUrlControl?.setValidators([
         Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)
