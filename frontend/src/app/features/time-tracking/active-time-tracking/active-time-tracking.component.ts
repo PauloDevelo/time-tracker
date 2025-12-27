@@ -34,6 +34,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   @Input() tasks: TaskWithProjectName[] | null = [];
   @Output() refreshRequest = new EventEmitter<void>();
   @ViewChild('taskSelect') taskSelect!: MatSelect;
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   get isTracking(): boolean {
     return !!this.activeTracking?.startProgressTime;
@@ -260,11 +261,16 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clears the search field when the dropdown opens
+   * Clears the search field and focuses the input when the dropdown opens
    */
   onSelectOpened(): void {
     this.searchControl.setValue('');
     this.highlightedIndex = -1;
+    
+    // Focus the search input after the dropdown is fully rendered
+    setTimeout(() => {
+      this.searchInput?.nativeElement?.focus();
+    }, 0);
   }
 
   private updateFilteredTasks(): void {
