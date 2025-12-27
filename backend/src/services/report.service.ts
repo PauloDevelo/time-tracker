@@ -8,6 +8,51 @@ import { Report, ProjectTimeData, TaskTimeData } from '../models/Report';
 import { ReportSummary } from '../models/ReportDto';
 
 /**
+ * Interface for project billing override configuration
+ */
+export interface IBillingOverride {
+  dailyRate?: number | null;
+  currency?: string;
+}
+
+/**
+ * Interface for customer billing details
+ */
+export interface IBillingDetails {
+  dailyRate: number;
+  currency?: string;
+}
+
+/**
+ * Determines the daily rate to use for billing calculations.
+ * Uses project's billing override if set, otherwise falls back to customer's rate.
+ * 
+ * Note: Uses nullish coalescing (??) so that 0 is treated as a valid rate,
+ * while null/undefined fall back to customer rate.
+ * 
+ * @param projectBillingOverride The project's billing override configuration
+ * @param customerBillingDetails The customer's billing details
+ * @returns The daily rate to use for calculations
+ */
+export function getDailyRate(
+  projectBillingOverride: IBillingOverride | undefined | null,
+  customerBillingDetails: IBillingDetails
+): number {
+  return projectBillingOverride?.dailyRate ?? customerBillingDetails.dailyRate;
+}
+
+/**
+ * Calculates the hourly rate from a daily rate.
+ * Assumes an 8-hour workday.
+ * 
+ * @param dailyRate The daily rate
+ * @returns The hourly rate (dailyRate / 8)
+ */
+export function getHourlyRate(dailyRate: number): number {
+  return dailyRate / 8;
+}
+
+/**
  * Get all available months that have time entries for a specific customer
  * @param customerId The customer ID to filter by
  * @param userId The user ID who owns the data
@@ -218,7 +263,9 @@ export const generateReport = async (
           
           if (reportType === 'invoice') {
             // Calculate cost based on daily rate and duration
-            const hourlyRate = customer.billingDetails.dailyRate / 8; // Assuming 8-hour workday
+            // Use project's billing override if set, otherwise fall back to customer's rate
+            const dailyRate = getDailyRate(project.billingOverride, customer.billingDetails);
+            const hourlyRate = getHourlyRate(dailyRate);
             cost = hourlyRate * duration;
             
             if (taskData.totalCost !== undefined) {

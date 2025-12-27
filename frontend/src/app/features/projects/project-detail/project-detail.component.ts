@@ -11,11 +11,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 import { ProjectService } from '../../../core/services/project.service';
 import { TaskService } from '../../../core/services/task.service';
 import { Project } from '../../../core/models/project.model';
 import { Task, TaskCreateRequest, TaskUpdateRequest } from '../../../core/models/task.model';
 import { TaskDialogComponent } from '../task-dialog/task-dialog.component';
+import { WorkItemImportDialogComponent } from '../work-item-import-dialog/work-item-import-dialog.component';
 
 @Component({
   selector: 'app-project-detail',
@@ -31,7 +33,8 @@ import { TaskDialogComponent } from '../task-dialog/task-dialog.component';
     MatProgressSpinnerModule,
     MatDialogModule,
     MatTableModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatBadgeModule
   ],
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss']
@@ -43,6 +46,7 @@ export class ProjectDetailComponent implements OnInit {
   loadingTasks = true;
   error = false;
   projectId: string = '';
+  isAzureDevOpsEnabled = false;
   displayedColumns: string[] = ['name', 'description', 'url', 'actions'];
 
   constructor(
@@ -74,6 +78,7 @@ export class ProjectDetailComponent implements OnInit {
     this.projectService.getProject(this.projectId).subscribe({
       next: (project) => {
         this.project = project;
+        this.isAzureDevOpsEnabled = project.azureDevOps?.enabled || false;
         this.loading = false;
       },
       error: (err) => {
@@ -201,5 +206,82 @@ export class ProjectDetailComponent implements OnInit {
 
   openTaskUrl(url: string): void {
     window.open(url, '_blank');
+  }
+
+  openImportDialog(): void {
+    if (!this.project) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(WorkItemImportDialogComponent, {
+      width: '600px',
+      data: {
+        projectId: this.project._id,
+        projectName: this.project.name
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Refresh task list after successful import
+        this.loadTasks();
+        
+        // Show success message
+        const message = `Successfully imported ${result.imported} work item${result.imported !== 1 ? 's' : ''}` +
+          (result.skipped > 0 ? ` (${result.skipped} skipped)` : '');
+        
+        this.snackBar.open(message, 'Close', {
+          duration: 5000
+        });
+
+        // Reload project to update last sync timestamp
+        this.loadProject();
+      }
+    });
+  }
+
+  isAzureDevOpsTask(task: Task): boolean {
+    return !!(task.azureDevOps?.workItemId);
+  }
+
+  getWorkItemTypeColor(type: string): string {
+    switch (type) {
+      case 'Bug':
+        return 'warn';
+      case 'Task':
+        return 'primary';
+      case 'User Story':
+        return 'accent';
+      default:
+        return 'primary';
+    }
+  }
+
+  getAzureDevOpsTaskCount(): number {
+    return this.tasks.filter(task => this.isAzureDevOpsTask(task)).length;
+  }
+
+  formatLastSyncDate(dateString?: string): string {
+    if (!dateString) {
+      return 'Never';
+    }
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) {
+      return 'Just now';
+    } else if (diffMins < 60) {
+      return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   }
 }

@@ -31,6 +31,31 @@
           <p *ngIf="!project.description" class="no-data">No description provided</p>
         </div>
 
+        <!-- Azure DevOps Integration Info -->
+        <div *ngIf="isAzureDevOpsEnabled" class="section azure-devops-info">
+          <div class="azure-devops-badge">
+            <mat-icon>cloud</mat-icon>
+            <span>Azure DevOps Integration Enabled</span>
+          </div>
+          <div class="sync-info" *ngIf="project.azureDevOps?.lastSyncedAt">
+            <mat-icon>sync</mat-icon>
+            <span>Last synced: {{ formatLastSyncDate(project.azureDevOps?.lastSyncedAt) }}</span>
+          </div>
+          <div class="import-stats" *ngIf="getAzureDevOpsTaskCount() > 0">
+            <mat-icon>task_alt</mat-icon>
+            <span>{{ getAzureDevOpsTaskCount() }} task{{ getAzureDevOpsTaskCount() !== 1 ? 's' : '' }} imported from Azure DevOps</span>
+          </div>
+        </div>
+
+        <!-- Billing Override Info -->
+        <div *ngIf="project.billingOverride?.dailyRate !== undefined && project.billingOverride?.dailyRate !== null" class="section billing-override-info">
+          <div class="billing-override-badge">
+            <mat-icon>attach_money</mat-icon>
+            <span>Custom Daily Rate: {{ project.billingOverride!.dailyRate | currency:(project.billingOverride!.currency || 'USD') }}</span>
+          </div>
+          <p class="billing-override-note">This project uses a custom daily rate instead of the customer's default rate.</p>
+        </div>
+
         <mat-divider></mat-divider>
 
         <div class="section">
@@ -53,9 +78,22 @@
         <div class="section tasks-section">
           <div class="tasks-header">
             <h3>Tasks</h3>
-            <button mat-mini-fab color="primary" (click)="openTaskDialog()" matTooltip="Add new task">
-              <mat-icon>add</mat-icon>
-            </button>
+            <div class="task-actions">
+              <button mat-raised-button color="primary" (click)="openTaskDialog()" class="add-task-button">
+                <mat-icon>add</mat-icon>
+                Add Task
+              </button>
+              <button 
+                *ngIf="isAzureDevOpsEnabled" 
+                mat-raised-button 
+                color="accent" 
+                (click)="openImportDialog()" 
+                class="import-button"
+                matTooltip="Import work items from Azure DevOps">
+                <mat-icon>cloud_download</mat-icon>
+                Import Work Items
+              </button>
+            </div>
           </div>
 
           <div *ngIf="loadingTasks" class="loading-tasks">
@@ -75,7 +113,30 @@
               <!-- Name Column -->
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Name</th>
-                <td mat-cell *matCellDef="let task">{{ task.name }}</td>
+                <td mat-cell *matCellDef="let task">
+                  <div class="task-name-cell">
+                    <!-- Azure DevOps Work Item Type Badge -->
+                    <span 
+                      *ngIf="isAzureDevOpsTask(task)" 
+                      class="work-item-badge"
+                      [ngClass]="'badge-' + getWorkItemTypeColor(task.azureDevOps!.workItemType)">
+                      {{ task.azureDevOps!.workItemType }}
+                    </span>
+                    
+                    <!-- Task Name (clickable if Azure DevOps task) -->
+                    <a 
+                      *ngIf="isAzureDevOpsTask(task)" 
+                      [href]="task.azureDevOps!.sourceUrl" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      class="azure-devops-link"
+                      [matTooltip]="'Open in Azure DevOps: Work Item #' + task.azureDevOps!.workItemId">
+                      {{ task.name }}
+                      <mat-icon class="external-link-icon">open_in_new</mat-icon>
+                    </a>
+                    <span *ngIf="!isAzureDevOpsTask(task)">{{ task.name }}</span>
+                  </div>
+                </td>
               </ng-container>
 
               <!-- Description Column -->

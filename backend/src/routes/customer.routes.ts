@@ -5,6 +5,7 @@ import {
   getCustomer,
   updateCustomer,
   deleteCustomer,
+  validateAzureDevOpsProject,
 } from '../controllers/customer.controller';
 import { auth } from '../middleware/auth';
 import { handleAuth } from './routes.helpers';
@@ -133,5 +134,57 @@ router.put('/:id', handleAuth(updateCustomer));
  *         description: Customer not found
  */
 router.delete('/:id', handleAuth(deleteCustomer));
+
+/**
+ * @swagger
+ * /api/customers/{id}/validate-azure-devops:
+ *   post:
+ *     summary: Validate Azure DevOps project name for a customer
+ *     tags: [Customers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Customer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - projectName
+ *             properties:
+ *               projectName:
+ *                 type: string
+ *                 description: Azure DevOps project name to validate
+ *     responses:
+ *       200:
+ *         description: Project validation successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                 projectId:
+ *                   type: string
+ *                 projectName:
+ *                   type: string
+ *                 projectUrl:
+ *                   type: string
+ *       400:
+ *         description: Bad request or Azure DevOps not configured
+ *       401:
+ *         description: Unauthorized or invalid PAT
+ *       404:
+ *         description: Customer or project not found
+ */
+router.post('/:id/validate-azure-devops', handleAuth(validateAzureDevOpsProject));
 
 export default router;

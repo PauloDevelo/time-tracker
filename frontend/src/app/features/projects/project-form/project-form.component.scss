@@ -32,4 +32,206 @@ mat-card-actions {
   padding: 8px 0;
   display: flex;
   gap: 8px;
-} 
+}
+
+// Azure DevOps section styles
+.azure-devops-section {
+  margin-top: 16px;
+}
+
+.azure-devops-enable {
+  margin-bottom: 16px;
+
+  .help-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0 32px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #2196f3;
+    }
+  }
+}
+
+.azure-devops-fields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.project-name-field {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  .validate-button {
+    margin-top: 8px;
+    min-width: 120px;
+  }
+}
+
+.success-icon {
+  color: #4caf50;
+}
+
+.validation-result {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 4px;
+
+  mat-icon {
+    flex-shrink: 0;
+  }
+
+  .message {
+    flex: 1;
+
+    strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    .project-url {
+      margin-top: 8px;
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #2196f3;
+        text-decoration: none;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+.validation-success {
+  display: flex;
+  gap: 12px;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4caf50;
+
+  mat-icon {
+    color: #4caf50;
+  }
+}
+
+.validation-error {
+  display: flex;
+  gap: 12px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid #f44336;
+
+  mat-icon {
+    color: #f44336;
+  }
+}
+
+.info-message {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background-color: rgba(33, 150, 243, 0.08);
+  border-radius: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.7);
+
+  mat-icon {
+    color: #2196f3;
+    flex-shrink: 0;
+  }
+}
+
+mat-expansion-panel-header {
+  mat-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Billing Override section styles
+.billing-override-section {
+  margin-top: 16px;
+}
+
+.billing-override-enable {
+  margin-bottom: 16px;
+
+  .help-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0 32px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #2196f3;
+    }
+  }
+}
+
+.billing-override-fields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+  .rate-field {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .project-name-field {
+    flex-direction: column;
+
+    .validate-button {
+      width: 100%;
+      margin-top: 0;
+    }
+  }
+
+  .billing-override-fields {
+    .rate-field {
+      max-width: 100%;
+    }
+  }
+}

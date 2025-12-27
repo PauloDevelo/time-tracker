@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Project, ProjectCreateRequest, ProjectUpdateRequest, ProjectsByCustomer } from '../models/project.model';
@@ -35,6 +35,16 @@ export class ProjectService {
 
   deleteProject(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+  }
+
+  getAzureDevOpsProjectNames(customerId?: string): Observable<string[]> {
+    let params = new HttpParams();
+    if (customerId) {
+      params = params.set('customerId', customerId);
+    }
+    return this.http.get<{ projectNames: string[] }>(`${this.apiUrl}/azure-devops-project-names`, { params }).pipe(
+      map(response => response.projectNames)
+    );
   }
 
   getProjectsByCustomer(): Observable<ProjectsByCustomer[]> {
@@ -79,4 +89,4 @@ export class ProjectService {
       })
     );
   }
-} 
+}
