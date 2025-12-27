@@ -12,10 +12,12 @@ export interface Project {
     enabled: boolean;
     lastSyncedAt?: string;
   };
-  billingOverride?: {
-    dailyRate?: number;
-    currency?: string;
-  };
+  contractId?: {
+    _id: string;
+    name: string;
+    dailyRate: number;
+    currency: string;
+  } | string;  // Can be populated object or just ID
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -25,14 +27,11 @@ export interface ProjectCreateRequest {
   name: string;
   description?: string;
   customerId: string;
+  contractId?: string;  // Optional, replaces billingOverride
   azureDevOps?: {
     projectName: string;
     projectId: string;
     enabled: boolean;
-  };
-  billingOverride?: {
-    dailyRate?: number;
-    currency?: string;
   };
 }
 
@@ -46,4 +45,4 @@ export interface ProjectsByCustomer {
     name: string;
   };
   projects: Project[];
-} 
+}

@@ -1,0 +1,32 @@
+mat-dialog-content {
+  min-width: 400px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.date-row,
+.billing-row {
+  display: flex;
+  gap: 16px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.date-range-error {
+  display: block;
+  margin-top: -16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.button-spinner {
+  display: inline-block;
+}
+
+mat-form-field {
+  margin-bottom: 8px;
+}

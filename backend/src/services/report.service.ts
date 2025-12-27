@@ -3,16 +3,17 @@ import { ITimeEntry, TimeEntry } from '../models/TimeEntry';
 import { ITask, Task } from '../models/Task';
 import { IProject, Project } from '../models/Project';
 import { Customer } from '../models/Customer';
+import { Contract, IContract } from '../models/Contract';
 import { User } from '../models/User';
-import { Report, ProjectTimeData, TaskTimeData } from '../models/Report';
+import { Report, ContractTimeData, ProjectTimeData, TaskTimeData } from '../models/Report';
 import { ReportSummary } from '../models/ReportDto';
 
 /**
- * Interface for project billing override configuration
+ * Interface for contract billing configuration
  */
-export interface IBillingOverride {
-  dailyRate?: number | null;
-  currency?: string;
+export interface IContractBilling {
+  dailyRate: number;
+  currency: string;
 }
 
 /**
@@ -25,20 +26,17 @@ export interface IBillingDetails {
 
 /**
  * Determines the daily rate to use for billing calculations.
- * Uses project's billing override if set, otherwise falls back to customer's rate.
+ * Uses contract's rate if available, otherwise falls back to customer's rate.
  * 
- * Note: Uses nullish coalescing (??) so that 0 is treated as a valid rate,
- * while null/undefined fall back to customer rate.
- * 
- * @param projectBillingOverride The project's billing override configuration
+ * @param contractBilling The contract's billing configuration (if project has a contract)
  * @param customerBillingDetails The customer's billing details
  * @returns The daily rate to use for calculations
  */
 export function getDailyRate(
-  projectBillingOverride: IBillingOverride | undefined | null,
+  contractBilling: IContractBilling | undefined | null,
   customerBillingDetails: IBillingDetails
 ): number {
-  return projectBillingOverride?.dailyRate ?? customerBillingDetails.dailyRate;
+  return contractBilling?.dailyRate ?? customerBillingDetails.dailyRate;
 }
 
 /**
@@ -203,6 +201,21 @@ export const generateReport = async (
       projectsMap.set(project._id.toString(), project);
     }
     
+    // Fetch contracts for projects that have contractId
+    const contractIds = projects
+      .filter(p => p.contractId)
+      .map(p => p.contractId as mongoose.Types.ObjectId);
+    
+    const contracts = contractIds.length > 0
+      ? await Contract.find({ _id: { $in: contractIds } })
+      : [];
+    
+    // Create a map of contracts for quick lookup
+    const contractsMap = new Map<string, (mongoose.Document<unknown, {}, IContract> & IContract & { _id: mongoose.Types.ObjectId; })>();
+    for (const contract of contracts) {
+      contractsMap.set(contract._id.toString(), contract);
+    }
+    
     // Find time entries within the date range for the tasks
     const timeEntries = await TimeEntry.find({
       taskId: { $in: tasks.map(task => task._id) },
@@ -211,11 +224,10 @@ export const generateReport = async (
     }).sort({ startTime: 1 });
     
     // Process time entries and calculate totals
-    const reportData: ProjectTimeData[] = [];
     let totalHours = 0;
     let totalCost = 0;
     
-    // Group entries by project and task
+    // Group entries by task
     const entriesByTask = new Map<string, (mongoose.Document<unknown, {}, ITimeEntry> & ITimeEntry & { _id: mongoose.Types.ObjectId; })[]>();
     for (const entry of timeEntries) {
       const taskId = entry.taskId.toString();
@@ -225,72 +237,112 @@ export const generateReport = async (
       entriesByTask.get(taskId)?.push(entry);
     }
     
-    // Process projects
+    // Group projects by contract
+    const projectsByContract = new Map<string, (mongoose.Document<unknown, {}, IProject> & IProject & { _id: mongoose.Types.ObjectId; })[]>();
+    const NO_CONTRACT_KEY = '__no_contract__';
+    
     for (const project of projects) {
-      const projectId = project._id.toString();
-      const projectTasks = tasks.filter(task => task.projectId.toString() === projectId);
-      
-      if (projectTasks.length === 0) {
-        continue;
+      const contractKey = project.contractId ? project.contractId.toString() : NO_CONTRACT_KEY;
+      if (!projectsByContract.has(contractKey)) {
+        projectsByContract.set(contractKey, []);
       }
+      projectsByContract.get(contractKey)?.push(project);
+    }
+    
+    // Process contracts
+    const contractsData: ContractTimeData[] = [];
+    
+    for (const [contractKey, contractProjects] of projectsByContract) {
+      const contract = contractKey !== NO_CONTRACT_KEY
+        ? contractsMap.get(contractKey)
+        : undefined;
       
-      const projectData: ProjectTimeData = {
-        projectId: project._id,
+      // Determine billing info for this contract group
+      const dailyRate = contract?.dailyRate ?? customer.billingDetails.dailyRate;
+      const currency = contract?.currency ?? customer.billingDetails.currency ?? 'EUR';
+      
+      const contractData: ContractTimeData = {
+        contractId: contract ? contract._id : null,
+        contractName: contract?.name ?? 'No Contract',
+        dailyRate,
+        currency,
         totalHours: 0,
-        tasks: [],
-        totalCost: reportType === 'invoice' ? 0 : undefined
+        totalCost: reportType === 'invoice' ? 0 : undefined,
+        projects: []
       };
       
-      // Process tasks for this project
-      for (const task of projectTasks) {
-        const taskId = task._id.toString();
-        const taskEntries = entriesByTask.get(taskId) || [];
+      // Process projects for this contract
+      for (const project of contractProjects) {
+        const projectId = project._id.toString();
+        const projectTasks = tasks.filter(task => task.projectId.toString() === projectId);
         
-        if (taskEntries.length === 0) {
+        if (projectTasks.length === 0) {
           continue;
         }
         
-        const taskData: TaskTimeData = {
-          taskId: task._id,
+        const projectData: ProjectTimeData = {
+          projectId: project._id,
           totalHours: 0,
+          tasks: [],
           totalCost: reportType === 'invoice' ? 0 : undefined
         };
         
-        // Process entries for this task
-        for (const entry of taskEntries) {
-          const duration = entry.totalDurationInHour;
-          let cost: number | undefined = undefined;
+        // Process tasks for this project
+        for (const task of projectTasks) {
+          const taskId = task._id.toString();
+          const taskEntries = entriesByTask.get(taskId) || [];
           
-          if (reportType === 'invoice') {
-            // Calculate cost based on daily rate and duration
-            // Use project's billing override if set, otherwise fall back to customer's rate
-            const dailyRate = getDailyRate(project.billingOverride, customer.billingDetails);
-            const hourlyRate = getHourlyRate(dailyRate);
-            cost = hourlyRate * duration;
-            
-            if (taskData.totalCost !== undefined) {
-              taskData.totalCost += cost;
-            }
-            
-            if (projectData.totalCost !== undefined) {
-              projectData.totalCost += cost;
-            }
-            
-            totalCost += cost;
+          if (taskEntries.length === 0) {
+            continue;
           }
           
-          taskData.totalHours += duration;
-          projectData.totalHours += duration;
-          totalHours += duration;
+          const taskData: TaskTimeData = {
+            taskId: task._id,
+            totalHours: 0,
+            totalCost: reportType === 'invoice' ? 0 : undefined
+          };
+          
+          // Process entries for this task
+          for (const entry of taskEntries) {
+            const duration = entry.totalDurationInHour;
+            
+            if (reportType === 'invoice') {
+              const hourlyRate = getHourlyRate(dailyRate);
+              const cost = hourlyRate * duration;
+              
+              if (taskData.totalCost !== undefined) {
+                taskData.totalCost += cost;
+              }
+              
+              if (projectData.totalCost !== undefined) {
+                projectData.totalCost += cost;
+              }
+              
+              if (contractData.totalCost !== undefined) {
+                contractData.totalCost += cost;
+              }
+              
+              totalCost += cost;
+            }
+            
+            taskData.totalHours += duration;
+            projectData.totalHours += duration;
+            contractData.totalHours += duration;
+            totalHours += duration;
+          }
+          
+          if (taskData.totalHours > 0) {
+            projectData.tasks.push(taskData);
+          }
         }
         
-        if (taskData.totalHours > 0) {
-          projectData.tasks.push(taskData);
+        if (projectData.tasks.length > 0) {
+          contractData.projects.push(projectData);
         }
       }
       
-      if (projectData.tasks.length > 0) {
-        reportData.push(projectData);
+      if (contractData.projects.length > 0) {
+        contractsData.push(contractData);
       }
     }
     
@@ -314,7 +366,7 @@ export const generateReport = async (
         totalHours,
         totalCost: reportType === 'invoice' ? totalCost : undefined
       },
-      projects: reportData
+      contracts: contractsData
     });
     
     await report.save();
@@ -333,16 +385,24 @@ export const generateReport = async (
       totalDays: report.summary.totalDays,
       totalHours: report.summary.totalHours,
       totalCost: report.summary.totalCost,
-      projects: report.projects.map(project => ({
-        projectId: project.projectId.toString(),
-        projectName: projectsMap.get(project.projectId.toString())?.name || '',
-        totalHours: project.totalHours,
-        totalCost: project.totalCost,
-        tasks: project.tasks.map(task => ({
-          taskId: task.taskId.toString(),
-          taskName: tasksMap.get(task.taskId.toString())?.name || '',
-          totalHours: task.totalHours,
-          totalCost: task.totalCost,
+      contracts: report.contracts.map(contract => ({
+        contractId: contract.contractId ? contract.contractId.toString() : null,
+        contractName: contract.contractName,
+        dailyRate: contract.dailyRate,
+        currency: contract.currency,
+        totalHours: contract.totalHours,
+        totalCost: contract.totalCost,
+        projects: contract.projects.map(project => ({
+          projectId: project.projectId.toString(),
+          projectName: projectsMap.get(project.projectId.toString())?.name || '',
+          totalHours: project.totalHours,
+          totalCost: project.totalCost,
+          tasks: project.tasks.map(task => ({
+            taskId: task.taskId.toString(),
+            taskName: tasksMap.get(task.taskId.toString())?.name || '',
+            totalHours: task.totalHours,
+            totalCost: task.totalCost,
+          }))
         }))
       }))
     };

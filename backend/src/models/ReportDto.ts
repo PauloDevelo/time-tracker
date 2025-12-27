@@ -8,6 +8,34 @@ export interface GenerateReportRequest {
   reportType: 'timesheet' | 'invoice';
 }
 
+// Task summary in report
+export interface TaskSummary {
+  taskId: string;
+  taskName: string;
+  totalHours: number;
+  totalCost?: number; // Only for invoice reports
+}
+
+// Project summary in report
+export interface ProjectSummary {
+  projectId: string;
+  projectName: string;
+  totalHours: number;
+  totalCost?: number; // Only for invoice reports
+  tasks: TaskSummary[];
+}
+
+// Contract summary in report
+export interface ContractSummary {
+  contractId: string | null;
+  contractName: string;
+  dailyRate: number;
+  currency: string;
+  totalHours: number;
+  totalCost?: number; // Only for invoice reports
+  projects: ProjectSummary[];
+}
+
 // Response DTO for successful report generation
 export interface ReportSummary {
   reportId: string;
@@ -22,24 +50,7 @@ export interface ReportSummary {
   totalDays: number;
   totalHours: number;
   totalCost?: number; // Only for invoice reports
-  projects: ProjectTimeDataDto[];
-}
-
-// Project time data in report summary
-export interface ProjectTimeDataDto {
-  projectId: string;
-  projectName: string;
-  totalHours: number;
-  tasks: TaskTimeDataDto[];
-  totalCost?: number; // Only for invoice reports
-}
-
-// Task time data in report summary
-export interface TaskTimeDataDto {
-  taskId: string;
-  taskName: string;
-  totalHours: number;
-  totalCost?: number; // Only for invoice reports
+  contracts: ContractSummary[];
 }
 
 // Generic response format for report endpoints

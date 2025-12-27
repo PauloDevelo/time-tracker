@@ -9,9 +9,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { ReportService } from '../../../core/services/report.service';
-import { ReportSummary, ReportRequest, ReportOptions } from '../../../core/models/report.model';
+import { ReportSummary, ReportRequest, ReportOptions, ContractTimeData } from '../../../core/models/report.model';
 
 @Component({
   selector: 'app-report-viewer',
@@ -25,7 +26,8 @@ import { ReportSummary, ReportRequest, ReportOptions } from '../../../core/model
     MatTableModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatExpansionModule
   ],
   templateUrl: './report-viewer.component.html',
   styleUrl: './report-viewer.component.scss'
@@ -35,6 +37,9 @@ export class ReportViewerComponent implements OnInit {
   reportRequest: ReportRequest | null = null;
   loading = false;
   error = '';
+  
+  // For contract data table
+  contractsDisplayedColumns: string[] = ['contractName', 'dailyRate', 'totalHours'];
   
   // For project data table
   projectsDisplayedColumns: string[] = ['projectName', 'totalHours'];
@@ -56,6 +61,7 @@ export class ReportViewerComponent implements OnInit {
     
     // Add cost column for invoice reports
     if (this.reportRequest?.reportType === 'invoice') {
+      this.contractsDisplayedColumns.push('totalCost');
       this.projectsDisplayedColumns.push('totalCost');
       this.tasksDisplayedColumns.push('totalCost');
     }
@@ -76,12 +82,16 @@ export class ReportViewerComponent implements OnInit {
     return `${start} to ${end}`;
   }
 
-  formatCurrency(amount: number | undefined): string {
+  formatCurrency(amount: number | undefined, currency?: string): string {
     if (amount === undefined) return '';
     return amount.toLocaleString('en-US', {
       style: 'currency',
-      currency: 'USD' // You might want to make this dynamic based on customer settings
+      currency: currency || 'USD'
     });
+  }
+
+  formatDailyRate(contract: ContractTimeData): string {
+    return this.formatCurrency(contract.dailyRate, contract.currency);
   }
 
   exportReport(format: 'excel' | 'csv' | 'pdf'): void {
@@ -158,4 +168,4 @@ export class ReportViewerComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/reports']);
   }
-} 
+}

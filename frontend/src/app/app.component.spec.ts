@@ -35,7 +35,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should have isAuthenticated initially set to false', () => {
+  it('should have isAuthenticated property initialized to false', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.isAuthenticated).toBeFalse();

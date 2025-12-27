@@ -284,4 +284,30 @@ export class ProjectDetailComponent implements OnInit {
       return date.toLocaleDateString();
     }
   }
+
+  // Contract helper methods
+  isContractPopulated(contractId: { _id: string; name: string; dailyRate: number; currency: string } | string | undefined): contractId is { _id: string; name: string; dailyRate: number; currency: string } {
+    return typeof contractId === 'object' && contractId !== null && '_id' in contractId;
+  }
+
+  getContractName(contractId: { _id: string; name: string; dailyRate: number; currency: string } | string | undefined): string {
+    if (this.isContractPopulated(contractId)) {
+      return contractId.name;
+    }
+    return '';
+  }
+
+  getContractDailyRate(contractId: { _id: string; name: string; dailyRate: number; currency: string } | string | undefined): number {
+    if (this.isContractPopulated(contractId)) {
+      return contractId.dailyRate;
+    }
+    return 0;
+  }
+
+  getContractCurrency(contractId: { _id: string; name: string; dailyRate: number; currency: string } | string | undefined): string {
+    if (this.isContractPopulated(contractId)) {
+      return contractId.currency;
+    }
+    return 'USD';
+  }
 }

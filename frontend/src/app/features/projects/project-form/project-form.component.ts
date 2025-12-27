@@ -14,7 +14,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Project, ProjectCreateRequest } from '../../../core/models/project.model';
 import { Customer } from '../../../core/models/customer.model';
+import { Contract } from '../../../core/models/contract.model';
 import { ProjectService } from '../../../core/services/project.service';
+import { ContractService } from '../../../core/services/contract.service';
 import { AzureDevOpsService, AzureDevOpsValidationResult } from '../../../core/services/azure-devops.service';
 import { debounceTime, distinctUntilChanged, map, Observable, of, startWith, Subject, takeUntil } from 'rxjs';
 
@@ -54,12 +56,17 @@ export class ProjectFormComponent implements OnInit, OnChanges {
   azureDevOpsProjectSuggestions: string[] = [];
   filteredProjectSuggestions$: Observable<string[]> = of([]);
   
+  // Contract selection
+  contracts: Contract[] = [];
+  contractsLoading = false;
+  
   private destroy$ = new Subject<void>();
   private projectNameChange$ = new Subject<string>();
 
   constructor(
     private fb: FormBuilder,
     private projectService: ProjectService,
+    private contractService: ContractService,
     private azureDevOpsService: AzureDevOpsService
   ) {}
 
@@ -67,6 +74,12 @@ export class ProjectFormComponent implements OnInit, OnChanges {
     this.initForm();
     this.setupAzureDevOpsValidation();
     this.setupFilteredProjectSuggestions();
+    this.setupContractLoading();
+    
+    // If editing, load contracts for the project's customer
+    if (this.project?.customerId._id) {
+      this.loadContracts(this.project.customerId._id);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -90,11 +103,7 @@ export class ProjectFormComponent implements OnInit, OnChanges {
         projectId: [this.project?.azureDevOps?.projectId || ''],
         enabled: [this.project?.azureDevOps?.enabled || false]
       }),
-      billingOverride: this.fb.group({
-        enabled: [this.project?.billingOverride?.dailyRate !== undefined && this.project?.billingOverride?.dailyRate !== null],
-        dailyRate: [this.project?.billingOverride?.dailyRate || null],
-        currency: [this.project?.billingOverride?.currency || '']
-      })
+      contractId: [this.getContractIdValue()]
     });
 
     // Check if customer has Azure DevOps when form is initialized
@@ -165,6 +174,45 @@ export class ProjectFormComponent implements OnInit, OnChanges {
       });
   }
 
+  setupContractLoading(): void {
+    // Load contracts when customer changes
+    this.projectForm.get('customerId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(customerId => {
+        if (customerId) {
+          this.loadContracts(customerId);
+          // Clear contract selection when customer changes
+          this.projectForm.patchValue({ contractId: '' });
+        } else {
+          this.contracts = [];
+        }
+      });
+  }
+
+  loadContracts(customerId: string): void {
+    this.contractsLoading = true;
+    this.contractService.getContractsByCustomer(customerId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (contracts) => {
+          this.contracts = contracts;
+          this.contractsLoading = false;
+          
+          // If editing and project has a contract, ensure it's selected
+          if (this.project?.contractId) {
+            const contractId = typeof this.project.contractId === 'string' 
+              ? this.project.contractId 
+              : this.project.contractId._id;
+            this.projectForm.patchValue({ contractId });
+          }
+        },
+        error: (error) => {
+          console.error('Error loading contracts:', error);
+          this.contractsLoading = false;
+        }
+      });
+  }
+
   onSubmit(): void {
     // If Azure DevOps is enabled, validation is required (for both new and existing projects)
     if (this.isAzureDevOpsEnabled && !this.azureDevOpsValidationResult?.valid) {
@@ -188,14 +236,9 @@ export class ProjectFormComponent implements OnInit, OnChanges {
         delete projectData.azureDevOps;
       }
 
-      // Handle billing override
-      if (formValue.billingOverride?.enabled && formValue.billingOverride?.dailyRate !== null) {
-        projectData.billingOverride = {
-          dailyRate: formValue.billingOverride.dailyRate,
-          currency: formValue.billingOverride.currency || undefined
-        };
-      } else {
-        delete projectData.billingOverride;
+      // Handle contractId - only include if set
+      if (!formValue.contractId) {
+        delete projectData.contractId;
       }
       
       this.formSubmit.emit(projectData);
@@ -297,29 +340,14 @@ export class ProjectFormComponent implements OnInit, OnChanges {
     return this.projectForm.get('azureDevOps.projectName')?.value || '';
   }
 
-  get isBillingOverrideEnabled(): boolean {
-    return this.projectForm.get('billingOverride.enabled')?.value || false;
-  }
-
-  get customerDailyRate(): number | null {
-    const customerId = this.projectForm.get('customerId')?.value;
-    const customer = this.customers.find(c => c._id === customerId);
-    return customer?.billingDetails?.dailyRate ?? null;
-  }
-
-  get customerCurrency(): string {
-    const customerId = this.projectForm.get('customerId')?.value;
-    const customer = this.customers.find(c => c._id === customerId);
-    return customer?.billingDetails?.currency ?? 'USD';
-  }
-
-  toggleBillingOverride(): void {
-    const enabled = this.isBillingOverrideEnabled;
-    if (!enabled) {
-      this.projectForm.get('billingOverride')?.patchValue({
-        dailyRate: null,
-        currency: ''
-      });
+  // Helper to extract contractId value from project (handles populated or string)
+  private getContractIdValue(): string {
+    if (!this.project?.contractId) {
+      return '';
     }
+    if (typeof this.project.contractId === 'string') {
+      return this.project.contractId;
+    }
+    return this.project.contractId._id;
   }
 }

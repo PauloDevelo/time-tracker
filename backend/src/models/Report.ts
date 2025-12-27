@@ -15,6 +15,17 @@ export interface ProjectTimeData {
   totalCost?: number; // Only for invoice reports
 }
 
+// Define the contract time data for reports
+export interface ContractTimeData {
+  contractId: mongoose.Types.ObjectId | null; // null for unassigned projects
+  contractName: string;
+  dailyRate: number;
+  currency: string;
+  totalHours: number;
+  totalCost?: number; // Only for invoice reports
+  projects: ProjectTimeData[];
+}
+
 // Define the main report interface
 export interface IReport extends Document {
   reportType: 'timesheet' | 'invoice';
@@ -32,7 +43,7 @@ export interface IReport extends Document {
     totalHours: number;
     totalCost?: number; // Only for invoice reports
   };
-  projects: ProjectTimeData[];
+  contracts: ContractTimeData[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -92,10 +103,22 @@ const reportSchema = new Schema<IReport>(
         required: false, // Only required for invoice reports
       },
     },
-    projects: [{
-      projectId: {
+    contracts: [{
+      contractId: {
         type: Schema.Types.ObjectId,
-        ref: 'Project',
+        ref: 'Contract',
+        required: false, // null for unassigned projects
+      },
+      contractName: {
+        type: String,
+        required: true,
+      },
+      dailyRate: {
+        type: Number,
+        required: true,
+      },
+      currency: {
+        type: String,
         required: true,
       },
       totalHours: {
@@ -106,10 +129,10 @@ const reportSchema = new Schema<IReport>(
         type: Number,
         required: false, // Only required for invoice reports
       },
-      tasks: [{
-        taskId: {
+      projects: [{
+        projectId: {
           type: Schema.Types.ObjectId,
-          ref: 'Task',
+          ref: 'Project',
           required: true,
         },
         totalHours: {
@@ -120,6 +143,21 @@ const reportSchema = new Schema<IReport>(
           type: Number,
           required: false, // Only required for invoice reports
         },
+        tasks: [{
+          taskId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Task',
+            required: true,
+          },
+          totalHours: {
+            type: Number,
+            required: true,
+          },
+          totalCost: {
+            type: Number,
+            required: false, // Only required for invoice reports
+          },
+        }],
       }],
     }],
   },

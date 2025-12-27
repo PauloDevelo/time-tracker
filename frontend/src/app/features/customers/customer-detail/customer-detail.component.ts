@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -10,8 +10,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { CustomerService } from '../../../core/services/customer.service';
+import { ContractService } from '../../../core/services/contract.service';
 import { Customer } from '../../../core/models/customer.model';
+import { Contract } from '../../../core/models/contract.model';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { ContractListComponent } from '../contract-list/contract-list.component';
+import { ContractFormDialogComponent, ContractFormDialogData } from '../contract-form-dialog/contract-form-dialog.component';
 
 @Component({
   selector: 'app-customer-detail',
@@ -23,20 +27,24 @@ import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-d
     MatButtonModule,
     MatIconModule,
     MatDividerModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    ContractListComponent
   ],
   templateUrl: './customer-detail.component.html',
   styleUrls: ['./customer-detail.component.scss']
 })
 export class CustomerDetailComponent implements OnInit {
+  @ViewChild(ContractListComponent) contractList!: ContractListComponent;
+
   customer: Customer | null = null;
   isLoading = true;
   error: string | null = null;
-  
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private customerService: CustomerService,
+    private contractService: ContractService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) { }
@@ -104,4 +112,62 @@ export class CustomerDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/customers']);
   }
-} 
+
+  onAddContract(): void {
+    const dialogRef = this.dialog.open(ContractFormDialogComponent, {
+      width: '500px',
+      data: {
+        customerId: this.customer!._id,
+        currency: this.customer!.billingDetails.currency
+      } as ContractFormDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.contractList?.loadContracts();
+      }
+    });
+  }
+
+  onEditContract(contract: Contract): void {
+    const dialogRef = this.dialog.open(ContractFormDialogComponent, {
+      width: '500px',
+      data: {
+        customerId: this.customer!._id,
+        contract: contract,
+        currency: this.customer!.billingDetails.currency
+      } as ContractFormDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.contractList?.loadContracts();
+      }
+    });
+  }
+
+  onDeleteContract(contract: Contract): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '350px',
+      data: {
+        title: 'Delete Contract',
+        message: `Are you sure you want to delete "${contract.name}"? This cannot be undone.`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.contractService.deleteContract(this.customer!._id, contract._id).subscribe({
+          next: () => {
+            this.snackBar.open('Contract deleted successfully', 'Close', { duration: 3000 });
+            this.contractList?.loadContracts();
+          },
+          error: (error) => {
+            const message = error.error?.message || 'Error deleting contract';
+            this.snackBar.open(message, 'Close', { duration: 5000 });
+          }
+        });
+      }
+    });
+  }
+}

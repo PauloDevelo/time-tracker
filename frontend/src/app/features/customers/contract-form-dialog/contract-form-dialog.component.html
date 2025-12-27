@@ -1,0 +1,86 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Contract' : 'New Contract' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Contract Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g., 2025 Annual Contract">
+      <mat-error *ngIf="form.get('name')?.hasError('required')">
+        Name is required
+      </mat-error>
+    </mat-form-field>
+
+    <div class="date-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+        <mat-error *ngIf="form.get('startDate')?.hasError('required')">
+          Start date is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+        <mat-error *ngIf="form.get('endDate')?.hasError('required')">
+          End date is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <mat-error *ngIf="form.hasError('dateRange')" class="date-range-error">
+      End date must be after start date
+    </mat-error>
+
+    <div class="billing-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Daily Rate</mat-label>
+        <input matInput type="number" formControlName="dailyRate" min="0">
+        <mat-error *ngIf="form.get('dailyRate')?.hasError('required')">
+          Daily rate is required
+        </mat-error>
+        <mat-error *ngIf="form.get('dailyRate')?.hasError('min')">
+          Daily rate must be 0 or greater
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Currency</mat-label>
+        <mat-select formControlName="currency">
+          <mat-option *ngFor="let c of currencies" [value]="c">{{ c }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Days to Completion</mat-label>
+      <input matInput type="number" formControlName="daysToCompletion" min="0">
+      <mat-hint>Number of working days allocated for this contract</mat-hint>
+      <mat-error *ngIf="form.get('daysToCompletion')?.hasError('required')">
+        Days to completion is required
+      </mat-error>
+      <mat-error *ngIf="form.get('daysToCompletion')?.hasError('min')">
+        Must be 0 or greater
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description (optional)</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+  <button mat-raised-button color="primary"
+          (click)="onSubmit()"
+          [disabled]="form.invalid || isLoading">
+    <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+    <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Create' }}</span>
+  </button>
+</mat-dialog-actions>

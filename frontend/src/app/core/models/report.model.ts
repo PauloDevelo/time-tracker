@@ -6,30 +6,34 @@ export interface ReportOptions {
   exportFormat?: 'excel' | 'csv' | 'pdf';
 }
 
-export interface ProjectTimeData {
-  projectId: string;
-  projectName: string;
-  totalHours: number;
-  tasks: TaskTimeData[];
-  totalCost?: number; // Only for invoice reports
-}
-
 export interface TaskTimeData {
   taskId: string;
   taskName: string;
   totalHours: number;
-  entries: TimeEntryReportData[];
-  totalCost?: number; // Only for invoice reports
+  totalCost?: number;
 }
 
-export interface TimeEntryReportData {
-  entryId: string;
-  startTime: Date;
-  duration: number; // Hours
-  cost?: number; // Only for invoice reports
+export interface ProjectTimeData {
+  projectId: string;
+  projectName: string;
+  totalHours: number;
+  totalCost?: number;
+  tasks: TaskTimeData[];
+}
+
+export interface ContractTimeData {
+  contractId: string | null;
+  contractName: string;
+  dailyRate: number;
+  currency: string;
+  totalHours: number;
+  totalCost?: number;
+  projects: ProjectTimeData[];
 }
 
 export interface ReportSummary {
+  reportId?: string;
+  reportType: 'timesheet' | 'invoice';
   customerName: string;
   customerAddress?: string;
   userFullName: string;
@@ -39,8 +43,8 @@ export interface ReportSummary {
   endDate: Date;
   totalDays: number;
   totalHours: number;
-  totalCost?: number; // Only for invoice reports
-  projects: ProjectTimeData[];
+  totalCost?: number;
+  contracts: ContractTimeData[];
 }
 
 export interface ReportRequest {
@@ -60,4 +64,4 @@ export interface ExportResponse {
   success: boolean;
   fileUrl?: string;
   error?: string;
-} 
+}
