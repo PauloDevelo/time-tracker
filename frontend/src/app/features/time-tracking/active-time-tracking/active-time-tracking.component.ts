@@ -259,19 +259,28 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Clears the search field when the dropdown opens
+   */
+  onSelectOpened(): void {
+    this.searchControl.setValue('');
+    this.highlightedIndex = -1;
+  }
+
   private updateFilteredTasks(): void {
     if (!this.tasks) {
       this.filteredTasks = [];
       return;
     }
 
-    const searchTerm = (this.searchControl.value || '').toLowerCase();
+    const searchTerm = (this.searchControl.value || '').toLowerCase().trim();
     
-    // Filter tasks by search term
+    // Filter tasks by search term (name, project name, or Azure DevOps work item ID)
     const filtered = searchTerm 
       ? this.tasks.filter(task => 
           task.name.toLowerCase().includes(searchTerm) || 
-          task.projectName.toLowerCase().includes(searchTerm))
+          task.projectName.toLowerCase().includes(searchTerm) ||
+          (task.azureDevOps?.workItemId && task.azureDevOps.workItemId.toString().includes(searchTerm)))
       : [...this.tasks];
     
     // Sort tasks by last activity date (most recent first)
