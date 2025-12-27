@@ -190,13 +190,13 @@ export const generateReport = async (
     }
     
     // Create a map of tasks for quick lookup
-    const tasksMap = new Map<string, (mongoose.Document<unknown, {}, ITask> & ITask & { _id: mongoose.Types.ObjectId; })>();
+    const tasksMap = new Map<string, (mongoose.Document<unknown, object, ITask> & ITask & { _id: mongoose.Types.ObjectId; })>();
     for (const task of tasks) {
       tasksMap.set(task._id.toString(), task);
     }
     
     // Create a map of projects for quick lookup
-    const projectsMap = new Map<string, (mongoose.Document<unknown, {}, IProject> & IProject & { _id: mongoose.Types.ObjectId; })>();
+    const projectsMap = new Map<string, (mongoose.Document<unknown, object, IProject> & IProject & { _id: mongoose.Types.ObjectId; })>();
     for (const project of projects) {
       projectsMap.set(project._id.toString(), project);
     }
@@ -211,7 +211,7 @@ export const generateReport = async (
       : [];
     
     // Create a map of contracts for quick lookup
-    const contractsMap = new Map<string, (mongoose.Document<unknown, {}, IContract> & IContract & { _id: mongoose.Types.ObjectId; })>();
+    const contractsMap = new Map<string, (mongoose.Document<unknown, object, IContract> & IContract & { _id: mongoose.Types.ObjectId; })>();
     for (const contract of contracts) {
       contractsMap.set(contract._id.toString(), contract);
     }
@@ -228,7 +228,7 @@ export const generateReport = async (
     let totalCost = 0;
     
     // Group entries by task
-    const entriesByTask = new Map<string, (mongoose.Document<unknown, {}, ITimeEntry> & ITimeEntry & { _id: mongoose.Types.ObjectId; })[]>();
+    const entriesByTask = new Map<string, (mongoose.Document<unknown, object, ITimeEntry> & ITimeEntry & { _id: mongoose.Types.ObjectId; })[]>();
     for (const entry of timeEntries) {
       const taskId = entry.taskId.toString();
       if (!entriesByTask.has(taskId)) {
@@ -238,7 +238,7 @@ export const generateReport = async (
     }
     
     // Group projects by contract
-    const projectsByContract = new Map<string, (mongoose.Document<unknown, {}, IProject> & IProject & { _id: mongoose.Types.ObjectId; })[]>();
+    const projectsByContract = new Map<string, (mongoose.Document<unknown, object, IProject> & IProject & { _id: mongoose.Types.ObjectId; })[]>();
     const NO_CONTRACT_KEY = '__no_contract__';
     
     for (const project of projects) {

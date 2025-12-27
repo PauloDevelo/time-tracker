@@ -42,9 +42,8 @@ jobs:
             npm install
           fi
 
-      - name: Lint (non-blocking)
-        run: npm run lint || echo "::warning::Backend linting issues found - see output above"
-        continue-on-error: true
+      - name: Lint
+        run: npm run lint
 
       - name: Build
         run: npm run build
@@ -89,9 +88,8 @@ jobs:
             npm install
           fi
 
-      - name: Lint (non-blocking)
-        run: npm run lint || echo "::warning::Frontend linting issues found - see output above"
-        continue-on-error: true
+      - name: Lint
+        run: npm run lint
 
       - name: Build
         run: npm run build -- --configuration=production

@@ -17,7 +17,7 @@ import { Observable, Subject, interval, map, takeUntil } from 'rxjs';
 import { TimeEntryService } from '../../core/services/time-entry.service';
 import { TaskService } from '../../core/services/task.service';
 import { TimeEntry } from '../../core/models/time-entry.model';
-import { Task, TaskWithProjectName } from '../../core/models/task.model';
+import { TaskWithProjectName } from '../../core/models/task.model';
 import { TimeEntryListComponent } from './time-entry-list/time-entry-list.component';
 import { ActiveTimeTrackingComponent } from './active-time-tracking/active-time-tracking.component';
 

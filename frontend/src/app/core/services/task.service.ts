@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, map, switchMap } from 'rxjs';
+import { Observable, forkJoin, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Task, TaskCreateRequest, TaskUpdateRequest, TaskWithProjectName, TasksByProject } from '../models/task.model';
 import { ProjectService } from './project.service';

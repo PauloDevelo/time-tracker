@@ -70,7 +70,7 @@ const customerSchema = new Schema<ICustomer>(
         validate: {
           validator: function(v: string) {
             if (!v) return true;
-            return /^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/.test(v);
+            return /^https:\/\/(dev\.azure\.com\/[^/]+|[^/]+\.visualstudio\.com)$/.test(v);
           },
           message: 'Invalid Azure DevOps organization URL format'
         }

@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Subject, interval, startWith, takeUntil } from 'rxjs';
 
 import { TimeEntryService } from '../../../core/services/time-entry.service';
-import { Task, TaskWithProjectName } from '../../../core/models/task.model';
+import { TaskWithProjectName } from '../../../core/models/task.model';
 import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
 
 @Component({
@@ -41,7 +41,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
   }
 
   // Changed from getter to a regular property
-  elapsedTime: number = 0;
+  elapsedTime = 0;
   
   taskControl = new FormControl<string>('');
   searchControl = new FormControl<string>('');
@@ -152,7 +152,7 @@ export class ActiveTimeTrackingComponent implements OnInit, OnDestroy {
 
   async stopTracking(): Promise<void> {
     try{
-      const updatedTimeEntry = await this.timeEntryService.stopTimeTracking();
+      await this.timeEntryService.stopTimeTracking();
       this.refreshRequest.emit();
     } catch (error) {
       console.error('Error stopping time tracking', error);

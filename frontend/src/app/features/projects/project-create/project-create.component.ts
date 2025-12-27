@@ -55,7 +55,7 @@ export class ProjectCreateComponent implements OnInit {
   onSubmit(projectData: ProjectCreateRequest): void {
     this.loading = true;
     this.projectService.createProject(projectData).subscribe({
-      next: (project) => {
+      next: () => {
         this.loading = false;
         this.snackBar.open('Project created successfully', 'Close', {
           duration: 3000

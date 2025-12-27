@@ -35,7 +35,7 @@ export class UserSettingsService {
       }
       
       if (settings.personalInformation) {
-        const { image: _, ...personalInfo } = settings.personalInformation;
+        const { image: _image, ...personalInfo } = settings.personalInformation;
         formData.append('personalInformation', JSON.stringify(personalInfo));
       }
       

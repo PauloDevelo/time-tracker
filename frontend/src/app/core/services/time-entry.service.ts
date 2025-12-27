@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, lastValueFrom, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, lastValueFrom, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TimeEntry, TimeEntryCreateRequest, TimeEntryUpdateRequest, ActiveTimeTracking } from '../models/time-entry.model';
 
@@ -36,7 +36,7 @@ export class TimeEntryService {
   }
 
   // Get most recent time entries for projects
-  getRecentTaskActivity(forTheLastPastDays: number = 30): Observable<{ taskId: string, lastActivity: Date }[]> {
+  getRecentTaskActivity(forTheLastPastDays = 30): Observable<{ taskId: string, lastActivity: Date }[]> {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - forTheLastPastDays);
@@ -85,7 +85,7 @@ export class TimeEntryService {
       await this.stopTimeTracking();
     }
 
-    var entry = await lastValueFrom(this.createTimeEntry({ 
+    const entry = await lastValueFrom(this.createTimeEntry({ 
       startTime: startDate.toISOString(),
       totalDurationInHour: 0,
       taskId

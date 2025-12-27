@@ -29,7 +29,7 @@ export interface TaskDialogData {
 })
 export class TaskDialogComponent implements OnInit {
   taskForm!: FormGroup;
-  dialogTitle: string = 'Add Task';
+  dialogTitle = 'Add Task';
 
   constructor(
     private fb: FormBuilder,

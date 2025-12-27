@@ -10,7 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { UserSettingsService } from '../../../core/services/user-settings.service';
-import { UserSettings, UserImage } from '../../../core/models/user-settings.model';
+import { UserSettings } from '../../../core/models/user-settings.model';
 import { finalize, Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -237,7 +237,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
                     settings.personalInformation.image.data.data
                       .reduce((data, byte) => data + String.fromCharCode(byte), '')
                   );
-              const { data, contentType } = settings.personalInformation.image;
+              const { contentType } = settings.personalInformation.image;
               this.profileImageSrc = `data:${contentType};base64,${base64}`;
             }
           }
@@ -313,7 +313,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       .subscribe(this.handleProfileUpdateResponse.bind(this));
   }
   
-  private handleProfileUpdateResponse(response?: any): void {
+  private handleProfileUpdateResponse(response?: UserSettings): void {
     // Update our local state with server values
     if (response?.personalInformation) {
       const { address } = response.personalInformation;

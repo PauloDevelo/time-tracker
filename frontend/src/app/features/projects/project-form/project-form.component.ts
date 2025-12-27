@@ -287,7 +287,7 @@ export class ProjectFormComponent implements OnInit, OnChanges {
     this.projectNameChange$.next(projectName);
   }
 
-  onAzureDevOpsProjectSelected(projectName: string): void {
+  onAzureDevOpsProjectSelected(_projectName: string): void {
     // When a suggestion is selected, trigger validation immediately
     this.azureDevOpsValidationResult = null;
     this.validateAzureDevOpsProject();
