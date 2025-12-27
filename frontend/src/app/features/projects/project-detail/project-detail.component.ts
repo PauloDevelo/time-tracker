@@ -45,7 +45,7 @@ export class ProjectDetailComponent implements OnInit {
   loading = true;
   loadingTasks = true;
   error = false;
-  projectId: string = '';
+  projectId = '';
   isAzureDevOpsEnabled = false;
   displayedColumns: string[] = ['name', 'description', 'url', 'actions'];
 
@@ -153,7 +153,7 @@ export class ProjectDetailComponent implements OnInit {
 
   createTask(taskRequest: TaskCreateRequest): void {
     this.taskService.createTask(taskRequest).subscribe({
-      next: (createdTask) => {
+      next: () => {
         this.snackBar.open('Task created successfully', 'Close', {
           duration: 3000
         });
@@ -170,7 +170,7 @@ export class ProjectDetailComponent implements OnInit {
 
   updateTask(taskRequest: TaskUpdateRequest): void {
     this.taskService.updateTask(taskRequest._id, taskRequest).subscribe({
-      next: (updatedTask) => {
+      next: () => {
         this.snackBar.open('Task updated successfully', 'Close', {
           duration: 3000
         });

@@ -24,7 +24,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
     (req as AuthenticatedRequest).user = user;
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({ message: 'Please authenticate.' });
   }
 };

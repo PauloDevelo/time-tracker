@@ -10,9 +10,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { TimeEntryService } from '../../../core/services/time-entry.service';
 import { TimeEntry } from '../../../core/models/time-entry.model';
-import { Task, TaskWithProjectName } from '../../../core/models/task.model';
+import { TaskWithProjectName } from '../../../core/models/task.model';
 import { TimeEntryEditDialogComponent } from './time-entry-edit-dialog/time-entry-edit-dialog.component';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+
 import { ActiveTimeTracking } from '../../../core/models/time-entry.model';
 import { Subscription } from 'rxjs';
 
@@ -98,7 +98,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
     this.refreshRequest.emit();
   }
 
-  async stopTimeEntry(timeEntry: TimeEntry): Promise<void> {
+  async stopTimeEntry(_timeEntry: TimeEntry): Promise<void> {
     try{
       const updatedTimeEntry = await this.timeEntryService.stopTimeTracking();
       if (updatedTimeEntry) {

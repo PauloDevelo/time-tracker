@@ -72,7 +72,7 @@ export class CustomerFormComponent implements OnInit, OnChanges {
         paymentTerms: ['']
       }),
       azureDevOps: this.fb.group({
-        organizationUrl: ['', [Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)]],
+        organizationUrl: ['', [Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^/]+|[^/]+\.visualstudio\.com)$/)]],
         pat: [''],
         enabled: [false]
       })
@@ -142,7 +142,7 @@ export class CustomerFormComponent implements OnInit, OnChanges {
     if (enabled) {
       organizationUrlControl?.setValidators([
         Validators.required,
-        Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)
+        Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^/]+|[^/]+\.visualstudio\.com)$/)
       ]);
       // PAT is only required for new customers or when enabling Azure DevOps for the first time
       // When editing, the existing PAT is preserved on the backend if not provided
@@ -153,7 +153,7 @@ export class CustomerFormComponent implements OnInit, OnChanges {
       }
     } else {
       organizationUrlControl?.setValidators([
-        Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^\/]+|[^\/]+\.visualstudio\.com)$/)
+        Validators.pattern(/^https:\/\/(dev\.azure\.com\/[^/]+|[^/]+\.visualstudio\.com)$/)
       ]);
       patControl?.clearValidators();
     }

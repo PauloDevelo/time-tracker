@@ -24,16 +24,15 @@ module.exports = function (config) {
         { type: 'html' },
         { type: 'text-summary' },
         { type: 'lcov' }
-      ]
-      // Coverage thresholds disabled for now - enable when test coverage improves
-      // check: {
-      //   global: {
-      //     statements: 50,
-      //     branches: 40,
-      //     functions: 50,
-      //     lines: 50
-      //   }
-      // }
+      ],
+      check: {
+        global: {
+          statements: 40,
+          branches: 50,
+          functions: 35,
+          lines: 40
+        }
+      }
     },
     reporters: ['progress', 'kjhtml', 'coverage'],
     browsers: ['Chrome'],

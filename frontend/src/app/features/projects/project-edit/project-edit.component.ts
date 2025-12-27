@@ -28,7 +28,7 @@ export class ProjectEditComponent implements OnInit {
   loading = false;
   loadingData = true;
   error = false;
-  projectId: string = '';
+  projectId = '';
 
   constructor(
     private projectService: ProjectService,
@@ -85,7 +85,7 @@ export class ProjectEditComponent implements OnInit {
     };
     
     this.projectService.updateProject(this.projectId, updateData).subscribe({
-      next: (project) => {
+      next: () => {
         this.loading = false;
         this.snackBar.open('Project updated successfully', 'Close', {
           duration: 3000

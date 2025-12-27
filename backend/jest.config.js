@@ -12,14 +12,13 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  // Coverage thresholds disabled for now - enable when test coverage improves
-  // coverageThreshold: {
-  //   global: {
-  //     branches: 60,
-  //     functions: 60,
-  //     lines: 70,
-  //     statements: 70
-  //   }
-  // },
+  coverageThreshold: {
+    global: {
+      branches: 15,
+      functions: 15,
+      lines: 20,
+      statements: 20
+    }
+  },
   verbose: true
 };

@@ -34,8 +34,8 @@ export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
   submitted = false;
-  returnUrl: string = '/dashboard';
-  error: string = '';
+  returnUrl = '/dashboard';
+  error = '';
 
   constructor(
     private formBuilder: FormBuilder,

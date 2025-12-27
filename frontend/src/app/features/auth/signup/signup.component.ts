@@ -34,7 +34,7 @@ export class SignupComponent {
   signupForm: FormGroup;
   loading = false;
   submitted = false;
-  error: string = '';
+  error = '';
 
   constructor(
     private formBuilder: FormBuilder,
