@@ -17,6 +17,9 @@ FRONTEND_DIR="$APP_DIR/frontend"
 NGINX_WEBROOT="/var/www/timetracker"
 BACKUP_DIR="/opt/time-tracker-backups"
 
+# Ensure common paths are in PATH (for GitHub Actions runner environment)
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -47,12 +50,18 @@ log_info "Starting deployment..."
 log_info "Running as user: $(whoami)"
 
 # Check required tools
-for cmd in node npm pm2 nginx; do
+for cmd in node npm pm2; do
     if ! command -v $cmd &> /dev/null; then
         log_error "$cmd is not installed. Please run the server setup first."
         exit 1
     fi
 done
+
+# Check nginx separately (may be in /usr/sbin which isn't always in PATH)
+if ! command -v nginx &> /dev/null && [ ! -x /usr/sbin/nginx ]; then
+    log_error "nginx is not installed. Please run the server setup first."
+    exit 1
+fi
 
 log_info "Node version: $(node --version)"
 log_info "NPM version: $(npm --version)"
@@ -152,7 +161,7 @@ log_info "Frontend deployed successfully!"
 # Reload Nginx
 # ============================================
 log_info "Reloading nginx..."
-sudo nginx -t && sudo systemctl reload nginx
+sudo /usr/sbin/nginx -t && sudo /usr/bin/systemctl reload nginx
 
 # ============================================
 # Health Check

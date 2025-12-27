@@ -18,6 +18,10 @@ on:
         type: boolean
         default: false
 
+# Grant write permissions for version bump commits and releases
+permissions:
+  contents: write
+
 env:
   NODE_VERSION: '20'
 
