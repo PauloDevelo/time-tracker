@@ -99,14 +99,18 @@ sudo chown -R $(whoami):$(whoami) "$APP_DIR"
 mkdir -p "$BACKEND_DIR"
 cp -r backend/* "$BACKEND_DIR/"
 
-# Install dependencies
+# Install dependencies (including dev dependencies for TypeScript build)
 cd "$BACKEND_DIR"
 log_info "Installing backend dependencies..."
-npm ci --production
+npm ci
 
 # Build TypeScript
 log_info "Building backend..."
 npm run build
+
+# Remove dev dependencies after build to reduce deployment size
+log_info "Pruning dev dependencies..."
+npm prune --production
 
 # Check if .env file exists
 if [ ! -f "$BACKEND_DIR/.env" ]; then
