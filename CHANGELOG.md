@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Nothing yet
 
+## [0.1.8] - 2025-12-27
+
+### Added
+- Nothing yet
+
+### Changed
+- Nothing yet
+
+### Fixed
+- Nothing yet
+
 ## [0.1.7] - 2025-12-27
 
 ### Added
@@ -118,6 +129,6 @@ This will be the first official release of Time Tracker.
   - Azure DevOps integration for importing work items
   - Dark/light theme support
 
-[Unreleased]: https://github.com/PauloDevelo/time-tracker/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/PauloDevelo/time-tracker/compare/v0.1.8...HEAD
 [0.1.1]: https://github.com/PauloDevelo/time-tracker/releases/tag/v0.1.1
 [0.1.0]: https://github.com/PauloDevelo/time-tracker/releases/tag/v0.1.0
