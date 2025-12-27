@@ -2,6 +2,7 @@ import { Response } from 'express';
 import mongoose from 'mongoose';
 import { Project } from '../models/Project';
 import { Customer } from '../models/Customer';
+import { Contract } from '../models/Contract';
 import { AuthenticatedRequest } from '../middleware/authenticated-request.model';
 import { AzureDevOpsClient } from '../services/azure-devops-client.service';
 import { AzureDevOpsSyncService } from '../services/azure-devops-sync.service';
@@ -12,10 +13,26 @@ import { AzureDevOpsSyncService } from '../services/azure-devops-sync.service';
  */
 export const createProject = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { name, description, url, customerId, azureDevOps, billingOverride } = req.body;
+    const { name, description, url, customerId, azureDevOps, contractId } = req.body;
     
     // Assuming user ID is available from authentication middleware
     const userId = req.user?._id; 
+    
+    // Validate contract exists and belongs to same customer (if provided)
+    if (contractId) {
+      const contract = await Contract.findOne({
+        _id: contractId,
+        customerId: customerId,
+        userId: userId
+      });
+
+      if (!contract) {
+        res.status(400).json({ 
+          message: 'Invalid contract or contract does not belong to this customer' 
+        });
+        return;
+      }
+    }
     
     const projectData: any = {
       name,
@@ -30,14 +47,17 @@ export const createProject = async (req: AuthenticatedRequest, res: Response): P
       projectData.azureDevOps = azureDevOps;
     }
     
-    // Include billingOverride if provided
-    if (billingOverride) {
-      projectData.billingOverride = billingOverride;
+    // Include contractId if provided
+    if (contractId) {
+      projectData.contractId = contractId;
     }
     
     const project = new Project(projectData);
 
     const savedProject = await project.save();
+    
+    // Populate contract details before returning
+    await savedProject.populate('contractId', 'name dailyRate currency startDate endDate');
     
     res.status(201).json(savedProject);
   } catch (error) {
@@ -73,6 +93,7 @@ export const getAllProjects =  async (req: AuthenticatedRequest, res: Response):
     
     const projects = await Project.find(filter)
       .populate('customerId', 'name')
+      .populate('contractId', 'name dailyRate currency startDate endDate')
       .sort({ createdAt: -1 });
     
     res.status(200).json(projects);
@@ -99,7 +120,8 @@ export const getProjectById = async (req: AuthenticatedRequest, res: Response): 
     }
     
     const project = await Project.findOne({ _id: id, userId })
-      .populate('customerId', 'name');
+      .populate('customerId', 'name')
+      .populate('contractId', 'name dailyRate currency startDate endDate');
     
     if (!project) {
       res.status(404).json({ message: 'Project not found' });
@@ -123,7 +145,7 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
   try {
     const { id } = req.params;
     const userId = req.user?._id;
-    const { name, description, url, customerId, azureDevOps, billingOverride } = req.body;
+    const { name, description, url, customerId, azureDevOps, contractId } = req.body;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'Invalid project ID' });
@@ -137,6 +159,27 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
       return;
     }
     
+    // Determine the effective customerId (use provided or existing)
+    const effectiveCustomerId = customerId || project.customerId;
+    
+    // Validate contract exists and belongs to same customer (if provided)
+    if (contractId !== undefined) {
+      if (contractId !== null && contractId !== '') {
+        const contract = await Contract.findOne({
+          _id: contractId,
+          customerId: effectiveCustomerId,
+          userId: userId
+        });
+
+        if (!contract) {
+          res.status(400).json({ 
+            message: 'Invalid contract or contract does not belong to this customer' 
+          });
+          return;
+        }
+      }
+    }
+    
     // Build update object
     const updateData: any = { name, description, url, customerId };
     
@@ -145,13 +188,13 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
       updateData.azureDevOps = azureDevOps;
     }
     
-    // Handle billingOverride - set it if provided, or unset it if explicitly removed
-    if (billingOverride !== undefined) {
-      if (billingOverride === null || Object.keys(billingOverride).length === 0) {
-        // Remove billingOverride if null or empty object
-        updateData.$unset = { billingOverride: 1 };
+    // Handle contractId - set it if provided, or unset it if explicitly removed
+    if (contractId !== undefined) {
+      if (contractId === null || contractId === '') {
+        // Remove contractId if null or empty string
+        updateData.$unset = { contractId: 1 };
       } else {
-        updateData.billingOverride = billingOverride;
+        updateData.contractId = contractId;
       }
     }
     
@@ -159,7 +202,9 @@ export const updateProject = async (req: AuthenticatedRequest, res: Response): P
       id,
       updateData,
       { new: true, runValidators: true }
-    ).populate('customerId', 'name');
+    )
+      .populate('customerId', 'name')
+      .populate('contractId', 'name dailyRate currency startDate endDate');
     
     res.status(200).json(updatedProject);
   } catch (error) {

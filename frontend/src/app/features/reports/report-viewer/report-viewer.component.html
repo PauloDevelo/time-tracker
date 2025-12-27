@@ -58,67 +58,98 @@
       </mat-card-content>
     </mat-card>
     
-    <!-- Project Data -->
+    <!-- Contract Summary -->
     <mat-card class="report-data-card">
       <mat-card-header>
-        <mat-card-title>Project Summary</mat-card-title>
+        <mat-card-title>Contract Summary</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <table mat-table [dataSource]="report.projects" class="mat-elevation-z1 full-width">
-          <!-- Project Name Column -->
-          <ng-container matColumnDef="projectName">
-            <th mat-header-cell *matHeaderCellDef>Project</th>
-            <td mat-cell *matCellDef="let project">{{ project.projectName }}</td>
+        <table mat-table [dataSource]="report.contracts" class="mat-elevation-z1 full-width">
+          <!-- Contract Name Column -->
+          <ng-container matColumnDef="contractName">
+            <th mat-header-cell *matHeaderCellDef>Contract</th>
+            <td mat-cell *matCellDef="let contract">{{ contract.contractName }}</td>
+          </ng-container>
+          
+          <!-- Daily Rate Column -->
+          <ng-container matColumnDef="dailyRate">
+            <th mat-header-cell *matHeaderCellDef>Daily Rate</th>
+            <td mat-cell *matCellDef="let contract">{{ formatDailyRate(contract) }}</td>
           </ng-container>
           
           <!-- Hours Column -->
           <ng-container matColumnDef="totalHours">
             <th mat-header-cell *matHeaderCellDef>Total Hours</th>
-            <td mat-cell *matCellDef="let project">{{ project.totalHours.toFixed(2) }}</td>
+            <td mat-cell *matCellDef="let contract">{{ contract.totalHours.toFixed(2) }}</td>
           </ng-container>
           
           <!-- Cost Column (only for invoice reports) -->
           <ng-container matColumnDef="totalCost" *ngIf="reportRequest?.reportType === 'invoice'">
             <th mat-header-cell *matHeaderCellDef>Total Cost</th>
-            <td mat-cell *matCellDef="let project">{{ formatCurrency(project.totalCost) }}</td>
+            <td mat-cell *matCellDef="let contract">{{ formatCurrency(contract.totalCost, contract.currency) }}</td>
           </ng-container>
           
-          <tr mat-header-row *matHeaderRowDef="projectsDisplayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: projectsDisplayedColumns;"></tr>
+          <tr mat-header-row *matHeaderRowDef="contractsDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: contractsDisplayedColumns;"></tr>
         </table>
       </mat-card-content>
     </mat-card>
     
-    <!-- Task Details by Project -->
-    <mat-card *ngFor="let project of report.projects" class="report-data-card">
-      <mat-card-header>
-        <mat-card-title>{{ project.projectName }} - Tasks</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <table mat-table [dataSource]="project.tasks" class="mat-elevation-z1 full-width">
-          <!-- Task Name Column -->
-          <ng-container matColumnDef="taskName">
-            <th mat-header-cell *matHeaderCellDef>Task</th>
-            <td mat-cell *matCellDef="let task">{{ task.taskName }}</td>
-          </ng-container>
-          
-          <!-- Hours Column -->
-          <ng-container matColumnDef="totalHours">
-            <th mat-header-cell *matHeaderCellDef>Total Hours</th>
-            <td mat-cell *matCellDef="let task">{{ task.totalHours.toFixed(2) }}</td>
-          </ng-container>
-          
-          <!-- Cost Column (only for invoice reports) -->
-          <ng-container matColumnDef="totalCost" *ngIf="reportRequest?.reportType === 'invoice'">
-            <th mat-header-cell *matHeaderCellDef>Total Cost</th>
-            <td mat-cell *matCellDef="let task">{{ formatCurrency(task.totalCost) }}</td>
-          </ng-container>
-          
-          <tr mat-header-row *matHeaderRowDef="tasksDisplayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: tasksDisplayedColumns;"></tr>
-        </table>
-      </mat-card-content>
-    </mat-card>
+    <!-- Contract Details with Projects and Tasks -->
+    <mat-accordion class="contract-accordion">
+      <mat-expansion-panel *ngFor="let contract of report.contracts" class="contract-panel">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ contract.contractName }}
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ contract.totalHours.toFixed(2) }} hours
+            <span *ngIf="reportRequest?.reportType === 'invoice'">
+              | {{ formatCurrency(contract.totalCost, contract.currency) }}
+            </span>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        
+        <!-- Projects within Contract -->
+        <div class="contract-projects">
+          <mat-card *ngFor="let project of contract.projects" class="project-card">
+            <mat-card-header>
+              <mat-card-title>{{ project.projectName }}</mat-card-title>
+              <mat-card-subtitle>
+                {{ project.totalHours.toFixed(2) }} hours
+                <span *ngIf="reportRequest?.reportType === 'invoice'">
+                  | {{ formatCurrency(project.totalCost, contract.currency) }}
+                </span>
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <table mat-table [dataSource]="project.tasks" class="mat-elevation-z1 full-width">
+                <!-- Task Name Column -->
+                <ng-container matColumnDef="taskName">
+                  <th mat-header-cell *matHeaderCellDef>Task</th>
+                  <td mat-cell *matCellDef="let task">{{ task.taskName }}</td>
+                </ng-container>
+                
+                <!-- Hours Column -->
+                <ng-container matColumnDef="totalHours">
+                  <th mat-header-cell *matHeaderCellDef>Total Hours</th>
+                  <td mat-cell *matCellDef="let task">{{ task.totalHours.toFixed(2) }}</td>
+                </ng-container>
+                
+                <!-- Cost Column (only for invoice reports) -->
+                <ng-container matColumnDef="totalCost" *ngIf="reportRequest?.reportType === 'invoice'">
+                  <th mat-header-cell *matHeaderCellDef>Total Cost</th>
+                  <td mat-cell *matCellDef="let task">{{ formatCurrency(task.totalCost, contract.currency) }}</td>
+                </ng-container>
+                
+                <tr mat-header-row *matHeaderRowDef="tasksDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: tasksDisplayedColumns;"></tr>
+              </table>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
     
     <div class="generation-info">
       Report generated on {{ report.generationDate | date:'medium' }}
@@ -131,4 +162,4 @@
   <button mat-flat-button color="primary" (click)="goBack()">
     Go to Report Generator
   </button>
-</div> 
+</div>

@@ -37,7 +37,7 @@
 
 .detail-section {
   margin: 24px 0;
-  
+
   h2 {
     margin-bottom: 16px;
     :not(.dark-theme){
@@ -46,11 +46,11 @@
     font-size: 18px;
     font-weight: 500;
   }
-  
+
   .detail-row {
     display: flex;
     margin-bottom: 12px;
-    
+
     .detail-label {
       width: 150px;
       font-weight: 500;
@@ -58,15 +58,19 @@
         color: rgba(0, 0, 0, 0.6);
       }
     }
-    
+
     .detail-value {
       flex: 1;
-      
+
       // Dark theme support
       .dark-theme & {
         color: #e0e0e0 !important;
       }
     }
+  }
+
+  app-contract-list {
+    display: block;
   }
 }
 

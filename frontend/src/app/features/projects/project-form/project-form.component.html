@@ -131,40 +131,26 @@
         </mat-expansion-panel>
       </div>
 
-      <!-- Billing Override Section -->
-      <div class="form-section billing-override-section">
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              <mat-icon>attach_money</mat-icon>
-              <span>Billing Override</span>
-            </mat-panel-title>
-            <mat-panel-description>
-              Override the customer's default daily rate for this project
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-
-          <div formGroupName="billingOverride">
-            <div class="billing-override-enable">
-              <mat-checkbox formControlName="enabled" (change)="toggleBillingOverride()">
-                Override customer's daily rate
-              </mat-checkbox>
-              <p class="help-text" *ngIf="customerDailyRate !== null">
-                <mat-icon>info</mat-icon>
-                <span>Customer's default rate: {{ customerDailyRate | currency:customerCurrency }}</span>
-              </p>
-            </div>
-
-            <div *ngIf="isBillingOverrideEnabled" class="billing-override-fields">
-              <mat-form-field appearance="outline" class="rate-field">
-                <mat-label>Daily Rate</mat-label>
-                <input matInput type="number" formControlName="dailyRate" min="0" step="0.01">
-                <span matTextPrefix>{{ customerCurrency }}&nbsp;</span>
-                <mat-hint>Enter the daily rate for this project</mat-hint>
-              </mat-form-field>
-            </div>
-          </div>
-        </mat-expansion-panel>
+      <!-- Contract Selection Section -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contract (Optional)</mat-label>
+          <mat-select formControlName="contractId">
+            <mat-option value="">-- No Contract --</mat-option>
+            <mat-option *ngIf="contractsLoading" disabled>
+              Loading contracts...
+            </mat-option>
+            <mat-option *ngIf="!contractsLoading && contracts.length === 0 && projectForm.get('customerId')?.value" disabled>
+              No contracts available for this customer
+            </mat-option>
+            <mat-option *ngFor="let contract of contracts" [value]="contract._id">
+              {{ contract.name }} ({{ contract.dailyRate | currency:contract.currency:'symbol':'1.0-0' }}/day)
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="!projectForm.get('customerId')?.value">
+            Select a customer first to see available contracts
+          </mat-hint>
+        </mat-form-field>
       </div>
     </mat-card-content>
 

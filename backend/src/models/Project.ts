@@ -12,10 +12,7 @@ export interface IProject extends Document {
     enabled: boolean;
     lastSyncedAt?: Date;
   };
-  billingOverride?: {
-    dailyRate?: number;
-    currency?: string;
-  };
+  contractId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   isAzureDevOpsEnabled(): boolean;
@@ -73,15 +70,10 @@ const projectSchema = new Schema<IProject>(
         type: Date,
       },
     },
-    billingOverride: {
-      dailyRate: {
-        type: Number,
-        min: 0,
-      },
-      currency: {
-        type: String,
-        trim: true,
-      },
+    contractId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Contract',
+      required: false,
     },
   },
   {
@@ -93,9 +85,12 @@ const projectSchema = new Schema<IProject>(
 projectSchema.index({ userId: 1, customerId: 1 });
 projectSchema.index({ name: 1 });
 projectSchema.index({ 'azureDevOps.projectId': 1 });
+projectSchema.index({ contractId: 1 });
 
 // Custom validation: if Azure DevOps is enabled, projectName and projectId must be set
-projectSchema.pre('validate', function(next) {
+// Also validates that contract belongs to the same customer
+projectSchema.pre('validate', async function(next) {
+  // Azure DevOps validation
   if (this.azureDevOps?.enabled) {
     if (!this.azureDevOps.projectName) {
       return next(new Error('Azure DevOps projectName is required when enabled is true'));
@@ -104,6 +99,19 @@ projectSchema.pre('validate', function(next) {
       return next(new Error('Azure DevOps projectId is required when enabled is true'));
     }
   }
+
+  // Validate contract belongs to same customer
+  if (this.contractId) {
+    const Contract = mongoose.model('Contract');
+    const contract = await Contract.findById(this.contractId);
+    if (!contract) {
+      return next(new Error('Contract not found'));
+    }
+    if (contract.customerId.toString() !== this.customerId.toString()) {
+      return next(new Error('Contract must belong to the same customer as the project'));
+    }
+  }
+
   next();
 });
 

@@ -77,6 +77,17 @@
         <mat-divider></mat-divider>
 
         <div class="detail-section">
+          <app-contract-list
+            [customerId]="customer._id"
+            (addContract)="onAddContract()"
+            (editContract)="onEditContract($event)"
+            (deleteContract)="onDeleteContract($event)">
+          </app-contract-list>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="detail-section">
           <h2>System Information</h2>
           <div class="detail-row">
             <span class="detail-label">Created:</span>

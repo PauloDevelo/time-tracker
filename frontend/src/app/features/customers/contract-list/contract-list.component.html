@@ -1,0 +1,74 @@
+<div class="contract-list">
+  <div class="list-header">
+    <h3>Contracts</h3>
+    <button mat-raised-button color="primary" (click)="onAdd()">
+      <mat-icon>add</mat-icon> Add Contract
+    </button>
+  </div>
+
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="30"></mat-spinner>
+  </div>
+
+  <table mat-table [dataSource]="contracts" *ngIf="!isLoading && contracts.length > 0" class="contracts-table">
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let contract">{{ contract.name }}</td>
+    </ng-container>
+
+    <!-- Period Column -->
+    <ng-container matColumnDef="period">
+      <th mat-header-cell *matHeaderCellDef>Period</th>
+      <td mat-cell *matCellDef="let contract">{{ formatPeriod(contract) }}</td>
+    </ng-container>
+
+    <!-- Daily Rate Column -->
+    <ng-container matColumnDef="dailyRate">
+      <th mat-header-cell *matHeaderCellDef>Daily Rate</th>
+      <td mat-cell *matCellDef="let contract">
+        {{ contract.dailyRate | currency:contract.currency:'symbol':'1.0-0' }}
+      </td>
+    </ng-container>
+
+    <!-- Days to Completion Column -->
+    <ng-container matColumnDef="daysToCompletion">
+      <th mat-header-cell *matHeaderCellDef>Days</th>
+      <td mat-cell *matCellDef="let contract">{{ contract.daysToCompletion }}</td>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let contract">
+        <mat-chip *ngIf="isActive(contract)" color="primary" selected>Active</mat-chip>
+        <mat-chip *ngIf="isExpired(contract)" color="warn">Expired</mat-chip>
+        <mat-chip *ngIf="!isActive(contract) && !isExpired(contract)">Upcoming</mat-chip>
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let contract">
+        <button mat-icon-button matTooltip="Edit" (click)="onEdit(contract)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Delete" color="warn" (click)="onDelete(contract)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <div class="empty-state" *ngIf="!isLoading && contracts.length === 0">
+    <mat-icon>description</mat-icon>
+    <p>No contracts yet. Add your first contract to start tracking billing.</p>
+    <button mat-raised-button color="primary" (click)="onAdd()">
+      <mat-icon>add</mat-icon> Add Contract
+    </button>
+  </div>
+</div>
