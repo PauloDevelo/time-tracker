@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [main, master, develop]
+    # Skip CI for version bump commits (created by release workflow)
+    paths-ignore:
+      - 'CHANGELOG.md'
   pull_request:
     branches: [main, master, develop]
 
@@ -120,6 +123,9 @@ jobs:
     needs: [backend, frontend]
     if: always()
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Check all jobs passed
         run: |
           if [[ "${{ needs.backend.result }}" != "success" || "${{ needs.frontend.result }}" != "success" ]]; then
@@ -127,3 +133,16 @@ jobs:
             exit 1
           fi
           echo "All CI jobs passed successfully!"
+
+      - name: Display version info
+        run: |
+          VERSION=$(node -p "require('./backend/package.json').version")
+          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | $VERSION |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All CI checks passed!" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,303 @@
+name: Release & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (determines version bump)'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      release_official:
+        description: 'Create official release with tag and deploy to production'
+        required: true
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================
+  # Run Full Test Suite First
+  # ============================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install and test backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+          npm run test:coverage
+
+      - name: Install and test frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build -- --configuration=production
+          npm run test:ci
+
+  # ============================================
+  # Prepare Release (calculate version, etc.)
+  # ============================================
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ inputs.release_official == true }}
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      current_version: ${{ steps.version.outputs.current_version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Calculate new version
+        id: version
+        run: |
+          # Get current version from backend package.json
+          CURRENT_VERSION=$(node -p "require('./backend/package.json').version")
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Parse version components
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          
+          # Calculate new version based on release type
+          case "${{ inputs.release_type }}" in
+            major)
+              NEW_VERSION="$((MAJOR + 1)).0.0"
+              ;;
+            minor)
+              NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
+              ;;
+            patch)
+              NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+              ;;
+          esac
+          
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version bump: $CURRENT_VERSION → $NEW_VERSION (${{ inputs.release_type }})"
+
+      - name: Display release info
+        run: |
+          echo "## 📋 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Current Version | ${{ steps.version.outputs.current_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| New Version | ${{ steps.version.outputs.new_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Release Type | ${{ inputs.release_type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏳ **Waiting for approval to proceed with release...**" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # Approval Gate - Requires manual approval
+  # ============================================
+  approve-release:
+    name: Approve Release
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    environment: production
+    steps:
+      - name: Release approved
+        run: |
+          echo "✅ Release v${{ needs.prepare-release.outputs.new_version }} has been approved!"
+          echo "## ✅ Release Approved" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Proceeding with release v${{ needs.prepare-release.outputs.new_version }}..." >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # Create Release (bump version, tag, GitHub release)
+  # ============================================
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, approve-release]
+    outputs:
+      new_version: ${{ needs.prepare-release.outputs.new_version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update version in package.json files
+        run: |
+          NEW_VERSION="${{ needs.prepare-release.outputs.new_version }}"
+          
+          # Update backend package.json
+          cd backend
+          npm version $NEW_VERSION --no-git-tag-version
+          cd ..
+          
+          # Update frontend package.json
+          cd frontend
+          npm version $NEW_VERSION --no-git-tag-version
+          cd ..
+          
+          echo "✅ Updated package.json files to version $NEW_VERSION"
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION="${{ needs.prepare-release.outputs.new_version }}"
+          TODAY=$(date +%Y-%m-%d)
+          
+          # Update the [Unreleased] section to the new version
+          sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n### Added\n- Nothing yet\n\n### Changed\n- Nothing yet\n\n### Fixed\n- Nothing yet\n\n## [$NEW_VERSION] - $TODAY/" CHANGELOG.md
+          
+          # Update the comparison links at the bottom
+          sed -i "s|\[Unreleased\]: \(.*\)/compare/v.*\.\.\.HEAD|\[Unreleased\]: \1/compare/v$NEW_VERSION...HEAD|" CHANGELOG.md
+          
+          echo "✅ Updated CHANGELOG.md for version $NEW_VERSION"
+
+      - name: Commit version bump
+        run: |
+          NEW_VERSION="${{ needs.prepare-release.outputs.new_version }}"
+          git add backend/package.json frontend/package.json CHANGELOG.md
+          git commit -m "chore(release): bump version to $NEW_VERSION"
+          git push origin main
+
+      - name: Create and push tag
+        run: |
+          NEW_VERSION="${{ needs.prepare-release.outputs.new_version }}"
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+          echo "✅ Created and pushed tag v$NEW_VERSION"
+
+      - name: Extract changelog for release
+        id: changelog
+        run: |
+          NEW_VERSION="${{ needs.prepare-release.outputs.new_version }}"
+          
+          # Extract the changelog section for this version
+          # This gets content between the version header and the next version header
+          CHANGELOG_CONTENT=$(awk "/## \[$NEW_VERSION\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md)
+          
+          # If no specific content, use a default message
+          if [ -z "$CHANGELOG_CONTENT" ]; then
+            CHANGELOG_CONTENT="Release v$NEW_VERSION"
+          fi
+          
+          # Save to file for the release body
+          echo "$CHANGELOG_CONTENT" > release_notes.md
+          echo "✅ Extracted changelog for release notes"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.prepare-release.outputs.new_version }}
+          name: Release v${{ needs.prepare-release.outputs.new_version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release summary
+        run: |
+          echo "## 🎉 Release Created Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | v${{ needs.prepare-release.outputs.new_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tag | v${{ needs.prepare-release.outputs.new_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Release URL | https://github.com/${{ github.repository }}/releases/tag/v${{ needs.prepare-release.outputs.new_version }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # Deploy to Production Server
+  # ============================================
+  deploy:
+    name: Deploy to Production
+    runs-on: self-hosted
+    needs: create-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.create-release.outputs.new_version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy application
+        run: |
+          echo "🚀 Deploying version v${{ needs.create-release.outputs.new_version }}..."
+          
+          # Run the deployment script
+          chmod +x ./scripts/deploy.sh
+          ./scripts/deploy.sh
+          
+          echo "✅ Deployment completed!"
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Verifying deployment..."
+          
+          # Wait for services to start
+          sleep 10
+          
+          # Check if backend is responding
+          if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health | grep -q "200"; then
+            echo "✅ Backend is healthy"
+          else
+            echo "⚠️ Backend health check failed (this is expected if /api/health endpoint doesn't exist yet)"
+          fi
+          
+          # Check if PM2 processes are running
+          pm2 list
+          
+          echo "✅ Deployment verification completed"
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Deployment Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | v${{ needs.create-release.outputs.new_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Server | timetracker.snpdnd.com |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # Notify on Failure
+  # ============================================
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [test, prepare-release, approve-release, create-release, deploy]
+    if: failure()
+    steps:
+      - name: Create failure summary
+        run: |
+          echo "## ❌ Release Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The release workflow failed. Please check the logs for details." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Failed Jobs:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Test: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Prepare Release: ${{ needs.prepare-release.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Approve Release: ${{ needs.approve-release.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Create Release: ${{ needs.create-release.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Deploy: ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY

@@ -1,5 +1,8 @@
 # Time Tracking Application
 
+[![CI](https://github.com/PauloDevelo/time-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/PauloDevelo/time-tracker/actions/workflows/ci.yml)
+[![Release](https://github.com/PauloDevelo/time-tracker/actions/workflows/release.yml/badge.svg)](https://github.com/PauloDevelo/time-tracker/actions/workflows/release.yml)
+
 A full-stack time tracking application built with Angular, Node.js, Express, and MongoDB.
 
 ## Features
@@ -92,10 +95,46 @@ time-tracking-app/
 
 API documentation is available at http://localhost:3000/api-docs when the backend server is running.
 
+## Release Process
+
+This project uses GitHub Actions for continuous integration and deployment.
+
+### How to Create a Release
+
+1. **Go to GitHub Actions** → Select "Release & Deploy" workflow
+2. **Click "Run workflow"** and configure:
+   - **Release type**: `patch` (0.1.0 → 0.1.1), `minor` (0.1.0 → 0.2.0), or `major` (0.1.0 → 1.0.0)
+   - **Create official release**: Check this box to create a tagged release and deploy
+3. **Wait for tests** to pass
+4. **Approve the release** when prompted (you'll receive a notification)
+5. The workflow will automatically:
+   - Bump version numbers in package.json files
+   - Update CHANGELOG.md
+   - Create a git tag (e.g., `v0.2.0`)
+   - Create a GitHub Release with release notes
+   - Deploy to production server
+
+### Versioning
+
+This project follows [Semantic Versioning](https://semver.org/):
+- **MAJOR**: Breaking changes
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes (backward compatible)
+
+### Deployment
+
+The application is deployed to `https://timetracker.snpdnd.com` using a self-hosted GitHub Actions runner.
+
+For server setup instructions, see [docs/SERVER_SETUP.md](docs/SERVER_SETUP.md).
+
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch
 3. Commit your changes
 4. Push to the branch
-5. Create a new Pull Request 
+5. Create a new Pull Request
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each version.
