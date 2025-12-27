@@ -1,18 +1,30 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { AuthService } from './core/services/auth.service';
+import { PreferencesService } from './core/services/preferences.service';
+import { BehaviorSubject } from 'rxjs';
+import { signal } from '@angular/core';
 
 describe('AppComponent', () => {
+  let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockPreferencesService: Partial<PreferencesService>;
+
   beforeEach(async () => {
+    mockAuthService = jasmine.createSpyObj('AuthService', ['isAuthenticated'], {
+      currentUser$: new BehaviorSubject(null)
+    });
+
+    mockPreferencesService = {
+      darkMode: signal(false)
+    };
+
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
         provideRouter([]),
-        provideHttpClient(),
-        { provide: JWT_OPTIONS, useValue: {} },
-        JwtHelperService
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: PreferencesService, useValue: mockPreferencesService }
       ]
     }).compileComponents();
   });
